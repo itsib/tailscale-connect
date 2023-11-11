@@ -1,0 +1,12 @@
+{
+  "name": "Tailscale Connect",
+  "description": "Graphical interface for the Tailscale service.",
+  "uuid": "tailscale-connect@itsib.github.com",
+  "url": "https://github.com/itsib/tailscale-connect",
+  "shell-version": [
+    "42",
+    "43",
+    "44"
+  ],
+  "version": "1"
+}

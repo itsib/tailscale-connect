@@ -1,0 +1,8 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="ShellCheck" enabled="true" level="ERROR" enabled_by_default="true">
+      <shellcheck_settings value="SC1000,SC1001,SC1003,SC1004,SC1007,SC1008,SC1009,SC1010,SC1011,SC1012,SC1014,SC1015,SC1016,SC1017,SC1018,SC1019,SC1020,SC1026,SC1028,SC1029,SC1035,SC1036,SC1037,SC1038,SC1039,SC1040,SC1041,SC1042,SC1044,SC1045,SC1046,SC1047,SC1048,SC1049,SC1050,SC1051,SC2012" />
+    </inspection_tool>
+  </profile>
+</component>

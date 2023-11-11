@@ -1,0 +1,9 @@
+/node_modules/
+
+# Extension artifact
+/dist/
+
+# Build outputs
+/build/
+
+tailscale-connect@itsib.github.com.zip

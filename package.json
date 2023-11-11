@@ -1,0 +1,25 @@
+{
+  "name": "tailscale-connect",
+  "version": "0.0.1",
+  "description": "Graphical interface for the Tailscale service.",
+  "author": "Sergey <itsib.su@gmail.com>",
+  "license": "ISC",
+  "private": true,
+  "main": "dist/extension.js",
+  "scripts": {
+    "clear": "rm -rf dist",
+    "build:app": "node esbuild.js",
+    "build": "npm run clear && npm run build:app",
+    "validate": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@girs/gjs": "^3.2.3",
+    "@girs/gnome-shell": "^3.0.0",
+    "@girs/gtk-4.0": "^4.10.5-3.2.3"
+  },
+  "devDependencies": {
+    "adm-zip": "^0.5.10",
+    "esbuild": "^0.17.19",
+    "typescript": "^5.0.4"
+  }
+}
