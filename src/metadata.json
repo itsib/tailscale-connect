@@ -8,5 +8,6 @@
     "43",
     "44"
   ],
-  "version": "1"
+  "settings-schema": "org.gnome.shell.extensions.tailscale-connect",
+  "gettext-domain" : "tailscale-connect"
 }
