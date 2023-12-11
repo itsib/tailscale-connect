@@ -1,12 +1,29 @@
-.tailscale-tray-button {
+.tc-menu-box {
 
 }
-
-.tailscale-tray-button StIcon {
-
+.tc-menu-box.panel-status-indicators-box {
+    padding: 0;
+    spacing: 0;
+}
+.tc-menu-box.panel-status-indicators-box .system-status-icon {
+    margin: 0 1px;
 }
 
+.ts-menu-item {
+    padding-left: 0px;
+}
+.ts-menu-item .popup-menu-icon {
+    margin-right: 8px;
+}
 
-.system-status-icon.tailscale-status-icon {
-
+.ts-popup-sub-menu-item {
+    padding-left: 20px;
+}
+.ts-popup-sub-menu-item .popup-menu-ornament {
+    margin-right: 10px;
+    position: relative;
+}
+.ts-popup-sub-menu-item.ts-connect-btn {
+    margin-bottom: 8px !important;
+    border-radius: 0 !important;
 }

@@ -1,0 +1,243 @@
+{
+  "Version": "1.54.1-tb78b24570",
+  "TUN": true,
+  "BackendState": "Running",
+  "AuthURL": "",
+  "TailscaleIPs": [
+    "100.69.7.44",
+    "fd7a:115c:a1e0::4d45:72c"
+  ],
+  "Self": {
+    "ID": "n5qFWKUzZo11CNTRL",
+    "PublicKey": "nodekey:47ebefdea5ddbf616cf98ae4a8650aa57842f684dc53da77299f5cf04d45072b",
+    "HostName": "msi",
+    "DNSName": "msi.faun-boga.ts.net.",
+    "OS": "linux",
+    "UserID": 5963745098903204,
+    "TailscaleIPs": [
+      "100.69.7.44",
+      "fd7a:115c:a1e0::4d45:72c"
+    ],
+    "Tags": [
+      "tag:client"
+    ],
+    "Addrs": [
+      "31.173.243.228:45863",
+      "[2a03:d000:6583:f769:872:8aef:53ff:2445]:41641",
+      "172.17.0.1:41641",
+      "172.21.0.1:41641",
+      "192.168.22.135:41641",
+      "[2a03:d000:6583:f769:64fc:3c76:2b15:7507]:41641"
+    ],
+    "CurAddr": "",
+    "Relay": "waw",
+    "RxBytes": 0,
+    "TxBytes": 0,
+    "Created": "2023-12-04T15:33:34.772849345Z",
+    "LastWrite": "0001-01-01T00:00:00Z",
+    "LastSeen": "0001-01-01T00:00:00Z",
+    "LastHandshake": "0001-01-01T00:00:00Z",
+    "Online": true,
+    "ExitNode": false,
+    "ExitNodeOption": false,
+    "Active": false,
+    "PeerAPIURL": [
+      "http://100.69.7.44:60445",
+      "http://[fd7a:115c:a1e0::4d45:72c]:60445"
+    ],
+    "CapMap": {
+      "https": null,
+      "https://tailscale.com/cap/file-sharing": null,
+      "https://tailscale.com/cap/ssh": null,
+      "https://tailscale.com/cap/tailnet-lock": null
+    },
+    "InNetworkMap": true,
+    "InMagicSock": false,
+    "InEngine": false
+  },
+  "Health": null,
+  "MagicDNSSuffix": "faun-boga.ts.net",
+  "CurrentTailnet": {
+    "Name": "itsib.su@gmail.com",
+    "MagicDNSSuffix": "faun-boga.ts.net",
+    "MagicDNSEnabled": true
+  },
+  "CertDomains": [
+    "msi.faun-boga.ts.net"
+  ],
+  "Peer": {
+    "nodekey:01ae403ec6d29869c1c0b57b2bd8a69d7ff2b9299409703c4d4b89e8de61ef13": {
+      "ID": "nqSwpNgvzN11CNTRL",
+      "PublicKey": "nodekey:01ae403ec6d29869c1c0b57b2bd8a69d7ff2b9299409703c4d4b89e8de61ef13",
+      "HostName": "my-home.local",
+      "DNSName": "my-home.faun-boga.ts.net.",
+      "OS": "linux",
+      "UserID": 8137555580851953,
+      "TailscaleIPs": [
+        "100.97.239.20",
+        "fd7a:115c:a1e0::de61:ef14"
+      ],
+      "Tags": [
+        "tag:client",
+        "tag:exit",
+        "tag:home"
+      ],
+      "PrimaryRoutes": [
+        "192.168.0.0/24"
+      ],
+      "Addrs": null,
+      "CurAddr": "95.188.71.189:49716",
+      "Relay": "ams",
+      "RxBytes": 1414976,
+      "TxBytes": 655796,
+      "Created": "2023-12-06T08:43:15.979805982Z",
+      "LastWrite": "2023-12-10T13:43:51.154278464+07:00",
+      "LastSeen": "0001-01-01T00:00:00Z",
+      "LastHandshake": "2023-12-10T16:39:23.9859541+07:00",
+      "Online": true,
+      "ExitNode": false,
+      "ExitNodeOption": false,
+      "Active": true,
+      "PeerAPIURL": [
+        "http://100.97.239.20:50011",
+        "http://[fd7a:115c:a1e0::de61:ef14]:50011"
+      ],
+      "InNetworkMap": true,
+      "InMagicSock": true,
+      "InEngine": true
+    },
+    "nodekey:03b27d21f8fe1b197861bb635885048d36bcf95ed05763af1609d308270f654d": {
+      "ID": "nVquKqjvxV11CNTRL",
+      "PublicKey": "nodekey:03b27d21f8fe1b197861bb635885048d36bcf95ed05763af1609d308270f654d",
+      "HostName": "amsterdam",
+      "DNSName": "amsterdam.faun-boga.ts.net.",
+      "OS": "linux",
+      "UserID": 8137555580851953,
+      "TailscaleIPs": [
+        "100.79.101.78",
+        "fd7a:115c:a1e0::270f:654e"
+      ],
+      "Tags": [
+        "tag:exit"
+      ],
+      "Addrs": null,
+      "CurAddr": "",
+      "Relay": "ams",
+      "RxBytes": 0,
+      "TxBytes": 0,
+      "Created": "2023-12-04T16:49:15.484881544Z",
+      "LastWrite": "0001-01-01T00:00:00Z",
+      "LastSeen": "0001-01-01T00:00:00Z",
+      "LastHandshake": "0001-01-01T00:00:00Z",
+      "Online": true,
+      "ExitNode": false,
+      "ExitNodeOption": true,
+      "Active": false,
+      "PeerAPIURL": [
+        "http://100.79.101.78:57498",
+        "http://[fd7a:115c:a1e0::270f:654e]:60762"
+      ],
+      "sshHostKeys": [
+        "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDM3pJPBaZ862fzrfGUyLM91qKFguFM17sXnNgCNAQvC/0J/th+rToXXyJ/uI569HhqFHl4WNWhL71CVxDxERbqH71trnlmMOd4JCqjLKdpX4gJoVTSdMuoQQlOcfNrtJjA+Pb3TaAi6CAIaL32uH6vuJqjuQTh2irOpP8KNhWB7NLciq+AvRm8wNvsHOZZmXuf1WaOqFAFrku8wQFwJBxeffXDqC9NGQP2QiP9mYOJADxurychWnfzOneAODILXwHcd/iLlgazUkEKU471tgUxaYVf2ux03koJejq3OPNTLaFOoQHLbGgZBW8wWLkR9LAjo4WX8rYakD50v8hRtCnSqM1ai4oRAp8Et2t+vadV9bhoUdwQPv4QnUmRtX1VxZ762me/iX5PxOrHmX2Lsnuqd+/hKOFJDP3KHhD/aqVGJxD1VefTwhb2/J85ibi/fV592g5DoX1vuiUvNmVDyG47kzlFjcph148+DP4duwQy6IIHW1GtWQsbVc1a5ZmhTrE=",
+        "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBAhS28eDdquOYzqiRNfdIlt0+TXUc8uTdXHV+2c/wbVZtalA5AQzbZqCJ5NBV9a2iTqaueDZI+sgEH5n+gWP10w=",
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMjSiZ32Lf0M5LzYeG9utBUVWAeyeqYXo1n3CgbwCHAB"
+      ],
+      "InNetworkMap": true,
+      "InMagicSock": true,
+      "InEngine": false
+    },
+    "nodekey:278c3fdb887ed13455f5de5d9be5f4e23b43800851e46ba0c6319d8b1fae551b": {
+      "ID": "nQHfhyY3PC21CNTRL",
+      "PublicKey": "nodekey:278c3fdb887ed13455f5de5d9be5f4e23b43800851e46ba0c6319d8b1fae551b",
+      "HostName": "beget",
+      "DNSName": "beget.faun-boga.ts.net.",
+      "OS": "linux",
+      "UserID": 8137555580851953,
+      "TailscaleIPs": [
+        "100.110.85.28",
+        "fd7a:115c:a1e0::1fae:551c"
+      ],
+      "Tags": [
+        "tag:exit"
+      ],
+      "Addrs": null,
+      "CurAddr": "",
+      "Relay": "waw",
+      "RxBytes": 0,
+      "TxBytes": 0,
+      "Created": "2023-12-04T15:40:12.329393027Z",
+      "LastWrite": "0001-01-01T00:00:00Z",
+      "LastSeen": "0001-01-01T00:00:00Z",
+      "LastHandshake": "0001-01-01T00:00:00Z",
+      "Online": true,
+      "ExitNode": false,
+      "ExitNodeOption": true,
+      "Active": false,
+      "PeerAPIURL": [
+        "http://100.110.85.28:51814",
+        "http://[fd7a:115c:a1e0::1fae:551c]:56358"
+      ],
+      "sshHostKeys": [
+        "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCu8ft1tzIPk6BAru24R9OEHNg//mg6L/gt2dNsJXyhqA98oGYC1+lasrvG3RGvgDTyjakI2Fwz0nB246XXHReb6nGfIq+kXGOCLRkmB56RmUSUDM9iFhAWfsOSEPgAq4VhKS5Z6LhSz07JQE4aU6KF6QD2Gd6bpHBqr44ZzHzTmSJdB+4AOZmy9FNtTw8tsQr3nH1NFeG9QTp2A91lE7ccXIMf8WvVzlAWBOi7vAH3YSKTU5zsH+72UNyO+K0mNKfseEdzK3NVnJGP7GlXsOzIkNrZtgwnuZqSUWHbjVz/3M9swB6HGywuPPGvXhxj7DtinViW9U3T98VilplMB6BFYY5DHlL33o50qq8fEs1uhIRwSwaX53WPz4T95sko/QczUsfkm318K/+2+/+FnGg4ALBHQ92SqlLGGM4RFQ2Hspuipj672uP/4vsmjNvx+eA8+mlWCjINHNo0o/+aQ4GXK0Jh/x/9UAVgQGytW7he0WiS9k1uhmrCdodcgtmgWM0=",
+        "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBMrxUnQJOWru7+rDNTdWEPblg//Mhglr25Ra8NHsiOgom8AELis3H/oxeC1KtdIXiwvFb48Ah9tF3s+ag+p6G9A=",
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN7EHQv9mR6/oInTLWVkyE8gR71HNWzH/lP/w7j3LuE9"
+      ],
+      "InNetworkMap": true,
+      "InMagicSock": true,
+      "InEngine": false
+    },
+    "nodekey:304bfdd67e45d7cc2339c280ecf15a182630e5a3c0bfb9bc084d3fe9f27cff39": {
+      "ID": "n35iHGi71611CNTRL",
+      "PublicKey": "nodekey:304bfdd67e45d7cc2339c280ecf15a182630e5a3c0bfb9bc084d3fe9f27cff39",
+      "HostName": "samsung SM-P615",
+      "DNSName": "samsung-tablet.faun-boga.ts.net.",
+      "OS": "android",
+      "UserID": 8137555580851953,
+      "TailscaleIPs": [
+        "100.124.255.58",
+        "fd7a:115c:a1e0::f27c:ff3a"
+      ],
+      "Tags": [
+        "tag:client"
+      ],
+      "Addrs": null,
+      "CurAddr": "",
+      "Relay": "waw",
+      "RxBytes": 0,
+      "TxBytes": 0,
+      "Created": "2023-12-04T16:11:03.278632302Z",
+      "LastWrite": "0001-01-01T00:00:00Z",
+      "LastSeen": "2023-12-10T09:40:00.1Z",
+      "LastHandshake": "0001-01-01T00:00:00Z",
+      "Online": false,
+      "ExitNode": false,
+      "ExitNodeOption": false,
+      "Active": false,
+      "PeerAPIURL": null,
+      "InNetworkMap": true,
+      "InMagicSock": true,
+      "InEngine": false
+    }
+  },
+  "User": {
+    "5963745098903204": {
+      "ID": 5963745098903204,
+      "LoginName": "msi.faun-boga.ts.net",
+      "DisplayName": "msi",
+      "ProfilePicURL": "",
+      "Roles": []
+    },
+    "8137555580851953": {
+      "ID": 8137555580851953,
+      "LoginName": "tagged-devices",
+      "DisplayName": "Tagged Devices",
+      "ProfilePicURL": "",
+      "Roles": []
+    }
+  },
+  "ClientVersion": {
+    "RunningLatest": true
+  }
+}
+
+

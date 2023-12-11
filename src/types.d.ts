@@ -2,12 +2,32 @@
 ///<reference path="../node_modules/@girs/gnome-shell/src/index.d.ts"/>
 ///<reference path="../node_modules/@girs/gjs/gjs.d.ts"/>
 
-
+declare interface TsNode {
+  id: string;
+  pubkey: string;
+  domain: string;
+  name: string;
+  os: string;
+  tags: string[];
+  ipV4: string;
+  ipV6: string;
+  active: boolean;
+  online: boolean;
+  exitActive: boolean;
+  exitSupport: boolean;
+}
 
 declare interface MenuAlignment {
   Left: number;
   Right: number;
   Center: number;
+}
+
+declare interface StoreKey {
+  RefreshInterval: 'refresh-interval';
+  LoginServer: 'login-server';
+  Operator: 'operator';
+  LogLevel: 'log-level';
 }
 
 declare interface ExtensionMetadata {
@@ -105,11 +125,16 @@ declare interface TailscaleUser extends TailscaleId {
 
 }
 
-declare interface TailscaleBackendState {
+declare interface TailscaleStateJson {
   Version: string;
   TUN: boolean;
   BackendState: string;
   AuthURL: string;
+  CurrentTailnet: {
+    Name: string;
+    MagicDNSSuffix: string;
+    MagicDNSEnabled: boolean;
+  }
   /**
    * v4/v6 IP Addresses
    */
@@ -120,13 +145,8 @@ declare interface TailscaleBackendState {
   ExitNodeStatus?: TailscalePeerBase;
 
   Health: null;
-  MagicDNSSuffix: string;
 
-  CurrentTailnet: {
-    Name: string;
-    MagicDNSSuffix: string;
-    MagicDNSEnabled: boolean;
-  }
+  MagicDNSSuffix: string;
 
   CertDomains: string[];
 
@@ -139,6 +159,12 @@ declare interface TailscaleBackendState {
   }
 }
 
+declare interface TailscaleUpFlags {
+  operator?: string;
+  acceptRoutes?: boolean;
+  reset?: boolean;
+}
+
 declare interface Logger {
   debug: (...rest: string[]) => void;
   info: (...rest: string[]) => void;
@@ -146,22 +172,23 @@ declare interface Logger {
   error: (...rest: string[]) => void;
 }
 
-declare type TailscaleState = 'enabled' | 'disabled' | 'connected' | 'loading';
-
-declare type Callback<T extends unknown[]> = (...rest: T) => void;
-
-declare type EventName = 'change-state';
-
-declare interface Tailscale {
-  on(eventName: 'change-state', callback: Callback<[TailscaleState]>): void;
-  on(eventName: EventName, callback: Callback<unknown[]>): void;
-  off(eventName?: EventName, callback?: Callback<unknown[]>): void;
-}
-
 declare interface Modules {
   logger: { Logger: Logger };
-  tailscale: { Tailscale: Tailscale };
-  utils: { MenuAlignment: MenuAlignment };
+  state: { getState: () => Object; destroyState: () => void };
+  utils: {
+    MenuAlignment: MenuAlignment;
+    StoreKey: StoreKey;
+  };
+  shell: {
+    getStatus: () => Promise<TailscaleStateJson>
+    networkUp: (params: TailscaleUpFlags) => Promise<void>;
+    networkDown: () => Promise<void>;
+    setExitNode: (nodeName: string | null) => Promise<void>;
+  }
+}
+
+declare interface UI {
+  ['manu-item-settings']: Object;
 }
 
 declare interface Extension {
@@ -173,7 +200,7 @@ declare interface Extension {
   hasUpdate: boolean;
   canChange: boolean;
   metadata: ExtensionMetadata;
-  imports: { modules: Modules };
+  imports: { modules: Modules, ui: UI };
 }
 
 declare function log(message?: string): void;

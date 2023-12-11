@@ -1,15 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schemalist gettext-domain="gnome-shell-extensions">
+<schemalist gettext-domain="tailscale-connect">
     <schema id="org.gnome.shell.extensions.tailscale-connect" path="/org/gnome/shell/extensions/tailscale-connect/">
         <key name="refresh-interval" type="i">
             <default>10</default>
             <summary>Refresh Interval</summary>
-            <description>Refresh interval in seconds</description>
+            <description>Refresh status interval in seconds</description>
         </key>
         <key name="login-server" type="s">
             <default>"https://controlplane.tailscale.com"</default>
             <summary>Login-Server Url</summary>
             <description>If you are using Headscale for your control server, use your Headscale instance’s URL.</description>
+        </key>
+        <key name="operator" type="s">
+            <default>""</default>
+            <summary>Operator</summary>
+            <description>Provide a Unix username other than root to operate tailscaled.</description>
+        </key>
+        <key name="log-level" type="i">
+            <default>0</default>
+            <summary>Log Level</summary>
+            <description>Which messages will be displayed in the log. If you select "Info", Error, Warning and Info will be visible.</description>
         </key>
     </schema>
 </schemalist>
