@@ -9,4 +9,12 @@ var StoreKey = {
   LoginServer: 'login-server',
   Operator: 'operator',
   LogLevel: 'log-level',
+  AcceptRoutes: 'accept-routes',
+}
+
+var ConnectionState = {
+  NeedLogin: -1,
+  Disabled: 0,
+  Enabled: 1,
+  Connected: 2,
 }

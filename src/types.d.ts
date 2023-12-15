@@ -1,6 +1,9 @@
 ///<reference path="../node_modules/@types/node/index.d.ts"/>
 ///<reference path="../node_modules/@girs/gnome-shell/src/index.d.ts"/>
 ///<reference path="../node_modules/@girs/gjs/gjs.d.ts"/>
+///<reference path="../node_modules/@girs/gobject-2.0/gobject-2.0.d.ts"/>
+
+import GObject from '@girs/gobject-2.0';
 
 declare interface TsNode {
   id: string;
@@ -28,6 +31,14 @@ declare interface StoreKey {
   LoginServer: 'login-server';
   Operator: 'operator';
   LogLevel: 'log-level';
+  AcceptRoutes: 'accept-routes';
+}
+
+declare interface ConnectionState {
+  NeedLogin: -1,
+  Disabled: 0,
+  Enabled: 1,
+  Connected: 2,
 }
 
 declare interface ExtensionMetadata {
@@ -165,6 +176,19 @@ declare interface TailscaleUpFlags {
   reset?: boolean;
 }
 
+declare interface TsNode {
+  id: string;
+}
+
+declare interface TsState extends GObject {
+  state: number;
+  tailNetName: string;
+  domain: string;
+  health: string;
+  exitNode: string;
+  nodes: TsNode[];
+}
+
 declare interface Logger {
   debug: (...rest: string[]) => void;
   info: (...rest: string[]) => void;
@@ -174,10 +198,14 @@ declare interface Logger {
 
 declare interface Modules {
   logger: { Logger: Logger };
-  state: { getState: () => Object; destroyState: () => void };
+  state: {
+    getState: () => TsState;
+    destroyState: () => void
+  };
   utils: {
     MenuAlignment: MenuAlignment;
     StoreKey: StoreKey;
+    ConnectionState: ConnectionState;
   };
   shell: {
     getStatus: () => Promise<TailscaleStateJson>

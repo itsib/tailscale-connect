@@ -24,6 +24,6 @@
     position: relative;
 }
 .ts-popup-sub-menu-item.ts-connect-btn {
-    margin-bottom: 8px !important;
-    border-radius: 0 !important;
+    /*margin-bottom: 8px !important;*/
+    /*border-radius: 0 !important;*/
 }

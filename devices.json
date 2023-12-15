@@ -1,0 +1,59 @@
+{
+  "addresses": [
+    "100.81.245.32",
+    "fd7a:115c:a1e0::de11:f520"
+  ],
+  "id": "7696040643560131",
+  "nodeId": "nYsTpNwY6321CNTRL",
+  "user": "itsib.su@gmail.com",
+  "name": "msi.faun-boga.ts.net",
+  "hostname": "msi",
+  "clientVersion": "1.54.1-tb78b24570",
+  "updateAvailable": false,
+  "os": "linux",
+  "created": "2023-12-10T09:57:21Z",
+  "lastSeen": "2023-12-12T07:22:10Z",
+  "keyExpiryDisabled": true,
+  "expires": "0001-01-01T00:00:00Z",
+  "authorized": true,
+  "isExternal": false,
+  "machineKey": "mkey:c5ffe771a178987f5473db12932a552f009c73f3e6f856d7c854ccf4e62a590b",
+  "nodeKey": "nodekey:c1f3cf9c6f8e4837f1b74d790bb2b0f57912641e9d49b224c7617c893f23800a",
+  "tailnetLockKey": "nlpub:465d407c25ea14b8de21a8ab74b98edf1787b390e24a65c630c510da03c4ac17",
+  "blocksIncomingConnections": false,
+  "enabledRoutes": [],
+  "advertisedRoutes": [],
+  "clientConnectivity": {
+    "endpoints": [
+      "95.188.71.189:41641",
+      "[2a03:d000:6583:f769:34ac:cb4c:6c0c:226]:41641",
+      "172.17.0.1:41641",
+      "172.20.0.1:41641",
+      "172.21.0.1:41641",
+      "192.168.0.11:41641",
+      "192.168.22.135:41641",
+      "[2a03:d000:6583:f769:64fc:3c76:2b15:7507]:41641"
+    ],
+    "mappingVariesByDestIP": false,
+    "latency": {
+      "Frankfurt": {
+        "preferred": true,
+        "latencyMs": 125.76398
+      },
+      "London": {
+        "latencyMs": 103.225302
+      },
+      "Paris": {
+        "latencyMs": 132.539582
+      }
+    },
+    "clientSupports": {
+      "hairPinning": false,
+      "ipv6": true,
+      "pcp": false,
+      "pmp": false,
+      "udp": true,
+      "upnp": false
+    }
+  }
+}

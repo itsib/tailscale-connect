@@ -21,5 +21,20 @@
             <summary>Log Level</summary>
             <description>Which messages will be displayed in the log. If you select "Info", Error, Warning and Info will be visible.</description>
         </key>
+        <key name="accept-routes" type="b">
+            <default>false</default>
+            <summary>Accept Routes</summary>
+            <description>Accept routes advertised by other Tailscale nodes (default false).</description>
+        </key>
+        <key name="shields-up" type="b">
+            <default>false</default>
+            <summary>Shields Up</summary>
+            <description>Don't allow incoming connections (default false).</description>
+        </key>
+        <key name="accept-dns" type="b">
+            <default>true</default>
+            <summary>Accept DNS</summary>
+            <description>Accept DNS configuration from the admin panel (default true).</description>
+        </key>
     </schema>
 </schemalist>

@@ -9,7 +9,9 @@ const { Logger } = Me.imports.modules.logger;
 const { TrayIcon } = Me.imports.modules['ui-tray-icon'];
 const { MenuItemSettings } = Me.imports.modules['ui-menu-item-settings'];
 const { MenuItemConnect } = Me.imports.modules['ui-menu-item-connect'];
-const { getState, destroyState } = Me.imports.modules.state;
+const { MenuItemAcceptRoutes } = Me.imports.modules['ui-menu-item-accept-routes'];
+const { MenuItemShieldsUp } = Me.imports.modules['ui-menu-item-shields-up'];
+const { getState, destroyState } = Me.imports.modules['ts-state'];
 
 const _ = ExtensionUtils.gettext;
 
@@ -18,23 +20,25 @@ class AppMenuButtonWidget extends PanelMenu.Button {
   static { GObject.registerClass(this) }
 
   _init() {
-    super._init(0.5, _('Tailscale Icon Button'));
+    super._init(0.5, _('Tailscale Main Menu'));
 
-    const state = getState();
+    const tsState = getState();
 
     // Subscribe to open/close menu popup
     this.menu.connect('open-state-changed', (menu, open) => {
       if (open) {
-        state.refresh(true);
+        tsState.refresh(true);
       }
       Logger.info(open ? `Menu open` : 'Menu close');
     });
 
     // Tray icon
-    this.add_child(new TrayIcon(state));
+    this.add_child(new TrayIcon(tsState));
 
     // Menu items
-    this.menu.addMenuItem(new MenuItemConnect(state));
+    this.menu.addMenuItem(new MenuItemConnect(tsState));
+    this.menu.addMenuItem(new MenuItemAcceptRoutes(tsState));
+    this.menu.addMenuItem(new MenuItemShieldsUp(tsState));
     this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
     this.menu.addMenuItem(new MenuItemSettings());
   }

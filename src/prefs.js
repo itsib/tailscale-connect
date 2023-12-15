@@ -8,6 +8,8 @@ const { RefreshIntervalControl } = Me.imports['prefs-ui']['ui-refresh-interval-c
 const { LoginServerControl } = Me.imports['prefs-ui']['ui-login-server-control'];
 const { OperatorControl } = Me.imports['prefs-ui']['ui-operator-control'];
 const { LogLevelControl } = Me.imports['prefs-ui']['ui-log-level-control'];
+const { AcceptRoutesControl } = Me.imports['prefs-ui']['ui-accept-routes-control'];
+const { ShieldsUpControl } = Me.imports['prefs-ui']['ui-shields-up-control'];
 
 const _ = ExtensionUtils.gettext;
 
@@ -20,6 +22,19 @@ class PreferencesWidget extends Gtk.Box {
       spacing: 20,
     });
 
+    const flagsGroup = new Adw.PreferencesGroup({
+      name: Me.metadata.name,
+      title: _('Connection'),
+      description: _(`Sets the parameters for startup and connecting your device to the Tailscale`),
+    });
+
+    flagsGroup.add(new LoginServerControl());
+    flagsGroup.add(new OperatorControl());
+    flagsGroup.add(new AcceptRoutesControl());
+    flagsGroup.add(new ShieldsUpControl());
+    this.append(flagsGroup);
+
+
     const prefsGroup = new Adw.PreferencesGroup({
       name: Me.metadata.name,
       title: _('Appearance'),
@@ -27,8 +42,6 @@ class PreferencesWidget extends Gtk.Box {
     })
 
     prefsGroup.add(new RefreshIntervalControl());
-    prefsGroup.add(new LoginServerControl());
-    prefsGroup.add(new OperatorControl());
     prefsGroup.add(new LogLevelControl());
 
     this.append(prefsGroup);

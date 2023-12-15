@@ -1,7 +1,7 @@
 const { GObject, GLib } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { StoreKey } = Me.imports.modules.utils;
+const { StoreKey, ConnectionState } = Me.imports.modules.utils;
 const { getStatus } = Me.imports.modules.shell;
 
 const { Logger } = Me.imports.modules.logger;
@@ -22,14 +22,14 @@ function startUpdater(callback) {
   callTimestamp = Date.now();
 
   const interval = ExtensionUtils.getSettings().get_int(StoreKey.RefreshInterval);
-  Logger.info(`⏰ Callback will call through ${interval} sec.`);
+  Logger.info(`⏰  Callback will call through ${interval} sec.`);
 
   timerId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, interval, () => {
     if (destroyed) {
       return GLib.SOURCE_REMOVE;
     }
     const msFromLastUpdate = Date.now() - callTimestamp
-    Logger.info(`⏰ Time left, sec:`, (msFromLastUpdate / 1000).toString());
+    Logger.info(`⏰  Time left, sec:`, (msFromLastUpdate / 1000).toString());
 
     callback();
 
@@ -141,11 +141,12 @@ class TsNode {
   }
 }
 
-class State extends GObject.Object {
+class TsState extends GObject.Object {
   static [GObject.properties] = {
-    state: GObject.ParamSpec.int('state', 'state', 'state', GObject.ParamFlags.READWRITE, 0, 2, 0),
+    state: GObject.ParamSpec.int('state', 'ConnectionState', 'state', GObject.ParamFlags.READWRITE, ConnectionState.NeedLogin, ConnectionState.Connected, 0),
     tailNetName: GObject.ParamSpec.string('tailNetName', 'tailNetName', 'tailNetName', GObject.ParamFlags.READWRITE, ''),
     domain: GObject.ParamSpec.string('domain', 'domain', 'domain', GObject.ParamFlags.READWRITE, ''),
+    health: GObject.ParamSpec.string('health', 'health', 'health', GObject.ParamFlags.READWRITE, ''),
     exitNode: GObject.ParamSpec.string('exitNode', 'exitNode', 'exitNode', GObject.ParamFlags.READWRITE, ''),
     nodes: GObject.ParamSpec.jsobject('nodes', 'nodes', 'nodes', GObject.ParamFlags.READWRITE),
   }
@@ -172,7 +173,7 @@ class State extends GObject.Object {
         this.update(statusObject, withNodes);
       })
       .catch(error => {
-        Logger.error('Fetch status error:', error.message, error);
+        Logger.error('Fetch status error:', `${error}`, error?.stack ?? '');
       });
   }
 
@@ -182,11 +183,25 @@ class State extends GObject.Object {
    * @param withNodes
    */
   update(status, withNodes = false) {
-    const state = status.BackendState === 'Running' ? (status.ExitNodeStatus ? 2 : 1) : 0;
+    switch (status.BackendState.trim()) {
+      case 'NeedsLogin':
+        this.set_property('state', ConnectionState.NeedLogin);
+        break;
+      case 'Running':
+        if (status.ExitNodeStatus) {
+          this.set_property('state', ConnectionState.Connected);
+        } else {
+          this.set_property('state', ConnectionState.Enabled);
+        }
+        break;
+      default:
+        this.set_property('state', ConnectionState.Disabled);
+    }
+    if (status.CurrentTailnet?.Name !== this.tailNetName) this.set_property('tailNetName', status?.CurrentTailnet?.Name || '');
+    if (status.MagicDNSSuffix !== this.domain) this.set_property('domain', status.MagicDNSSuffix || '');
 
-    this.set_property('state', state);
-    if (status.CurrentTailnet?.Name !== this.tailNetName) this.set_property('tailNetName', status.CurrentTailnet?.Name);
-    if (status.MagicDNSSuffix !== this.domain) this.set_property('domain', status.MagicDNSSuffix);
+    const health = status.Health?.join(' ') ?? '';
+    if (health !== this.health) this.set_property('health', health);
 
     let newExitNode = status.ExitNodeStatus?.ID ?? '';
     let exitNodeUpdated = false;
@@ -219,7 +234,8 @@ class State extends GObject.Object {
    * @param peersByKey
    * @param newExitNode
    */
-  _compareNodes(peersByKey, newExitNode) {
+  _compareNodes(peersByKey, newExitNode = '') {
+    peersByKey = peersByKey || {}
     let updated = false;
     let pubKeys = Object.keys(peersByKey);
     let nodes = [];
@@ -256,7 +272,7 @@ class State extends GObject.Object {
 
 var getState = () => {
   if (!StateInstance) {
-    StateInstance = new State();
+    StateInstance = new TsState();
   }
   return StateInstance;
 }

@@ -2,11 +2,15 @@ const { GObject, Gio } = imports.gi;
 const PopupMenu = imports.ui.popupMenu;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const { networkUp, networkDown, setExitNode } = Me.imports.modules.shell;
+const { networkUp, networkDown, setExitNode, login, logout } = Me.imports.modules.shell;
 const { Logger } = Me.imports.modules.logger;
 const { StoreKey  } = Me.imports.modules.utils;
 
 const _ = ExtensionUtils.gettext;
+
+const getIcon = id => {
+
+}
 
 class ConnectExitNodePopupMenuItem extends PopupMenu.PopupMenuItem {
   static [GObject.properties] = {
@@ -56,22 +60,22 @@ class ConnectExitNodePopupMenuItem extends PopupMenu.PopupMenuItem {
 
 var MenuItemConnect = class MenuItemConnect extends PopupMenu.PopupSubMenuMenuItem {
   static [GObject.properties] = {
-    state: GObject.ParamSpec.int('state', 'state', 'state', GObject.ParamFlags.READWRITE, 0, 2, 0),
-    isOpened: GObject.ParamSpec.boolean('isOpened', 'isOpened', 'isOpened', GObject.ParamFlags.READWRITE, false),
+    expanded: GObject.ParamSpec.boolean('expanded', 'expanded', 'expanded', GObject.ParamFlags.READWRITE, false),
   }
 
   static { GObject.registerClass(this) }
 
   /**
    *
-   * @param {GObject.Object} state
+   * @param {GObject.Object} tsState
    */
-  constructor(state) {
+  constructor(tsState) {
     super(_('Disconnected') , true);
 
     const icons = [
+      Gio.icon_new_for_string(Me.path + '/icons/icon-key.svg'),
       Gio.icon_new_for_string(Me.path + '/icons/icon-wifi-off.svg'),
-      Gio.icon_new_for_string(Me.path + '/icons/icon-blur-on.svg'),
+      Gio.icon_new_for_string(Me.path + '/icons/icon-wifi.svg'),
       Gio.icon_new_for_string(Me.path + '/icons/icon-vpn-lock.svg'),
     ];
 
@@ -82,17 +86,15 @@ var MenuItemConnect = class MenuItemConnect extends PopupMenu.PopupSubMenuMenuIt
     // Menu item style
     this.style_class += ' ts-menu-item'
 
-    this._tsState = state;
+    this._tsState = tsState;
     this._tsState.connect('notify::state', self => {
-      this.set_property('state', self.state);
-      this.icon.gicon = icons[self.state];
+      this.icon.gicon = icons[self.state + 1];
       this.updateMenuAndSubmenu(self);
     });
     this._tsState.connect('notify::exitNode', self => {
       this.updateMenuAndSubmenu(self);
     });
 
-    //
     this.menu.connect('open-state-changed', this._setIsOpenState.bind(this));
 
     // Separator
@@ -104,6 +106,11 @@ var MenuItemConnect = class MenuItemConnect extends PopupMenu.PopupSubMenuMenuIt
     this._connectSwitchBtn = new PopupMenu.PopupMenuItem(_('Connect'), { style_class: 'ts-popup-sub-menu-item ts-connect-btn' });
     this._connectSwitchBtn.connect('activate', this.onClickConnectBtn.bind(this))
     this.menu.addMenuItem(this._connectSwitchBtn);
+
+    this._logoutBtn = new PopupMenu.PopupMenuItem(_('Logout'), { style_class: 'ts-popup-sub-menu-item ts-connect-btn' });
+    this._logoutBtn.connect('activate', this.onClickLogout.bind(this));
+    this._logoutBtn.hide();
+    this.menu.addMenuItem(this._logoutBtn);
   }
 
   /**
@@ -111,10 +118,12 @@ var MenuItemConnect = class MenuItemConnect extends PopupMenu.PopupSubMenuMenuIt
    * @param {GObject} tsState
    */
   updateMenuAndSubmenu(tsState) {
-    if (this.isOpened) {
+    if (this.expanded) {
       return;
     }
-    if (tsState.state === 0) {
+    if (tsState.state === -1) {
+      return this._applyNeedLoginState();
+    } else if (tsState.state === 0) {
       return this._applyDisconnectState();
     } else {
       return this._applyConnectState(tsState);
@@ -125,13 +134,29 @@ var MenuItemConnect = class MenuItemConnect extends PopupMenu.PopupSubMenuMenuIt
    * Manage connection button click handler
    */
   onClickConnectBtn() {
-    Logger.info(`Set state. Current:`, this._tsState.state);
-    if (this._tsState.state === 0) {
-      const operator = ExtensionUtils.getSettings().get_string(StoreKey.Operator);
-      networkUp({ operator }).then(() => this._tsState.refresh(true));
-    } else {
-      networkDown().then(() => this._tsState.refresh(true));
+    const state = this._tsState.state;
+    const settings = ExtensionUtils.getSettings();
+    const operator = settings.get_string(StoreKey.Operator);
+    const acceptRoutes = settings.get_string(StoreKey.AcceptRoutes);
+
+    switch (state) {
+      case -1:
+        login({ operator });
+        break;
+      case 0:
+        networkUp({ operator, acceptRoutes }).then(() => this._tsState.refresh(true));
+        break;
+      default:
+        networkDown().then(() => this._tsState.refresh(true));
     }
+  }
+
+  /**
+   * Call logout command
+   */
+  onClickLogout() {
+    Logger.info('Logout');
+    logout();
   }
 
   /**
@@ -141,7 +166,7 @@ var MenuItemConnect = class MenuItemConnect extends PopupMenu.PopupSubMenuMenuIt
    * @private
    */
   _setIsOpenState(menu, open) {
-    this.set_property('isOpened', open);
+    this.set_property('expanded', open);
   }
 
   /**
@@ -177,6 +202,7 @@ var MenuItemConnect = class MenuItemConnect extends PopupMenu.PopupSubMenuMenuIt
       item.destroy();
     }
     this._separator.hide();
+    this._logoutBtn.hide();
   }
 
   /**
@@ -185,9 +211,20 @@ var MenuItemConnect = class MenuItemConnect extends PopupMenu.PopupSubMenuMenuIt
    */
   _applyDisconnectState() {
     this._removeNodesSubmenuItems();
-
-    this.label.text = _('Disconnected');
+    this.label.text = _('Offline');
     this._connectSwitchBtn.label.text = _('Connect');
+    this._logoutBtn.show();
+  }
+
+  /**
+   * Display "Login" button
+   * @private
+   */
+  _applyNeedLoginState() {
+    this._removeNodesSubmenuItems();
+    this.label.text = _('Logged Out');
+    this._connectSwitchBtn.label.text = _('Login');
+    this._logoutBtn.hide();
   }
 
   /**
@@ -211,7 +248,7 @@ var MenuItemConnect = class MenuItemConnect extends PopupMenu.PopupSubMenuMenuIt
         let submenuItem = new ConnectExitNodePopupMenuItem(tsState, node);
         let hostname = node.domain?.split(`.${tsState.domain}`)?.[0];
         if (tsState.exitNode === node.id && hostname) {
-          this.label.text = _('Exit Node') + (hostname ? ` - ${hostname}` : '');
+          this.label.text = _('Exit Node') + (hostname ? `: ${hostname}` : '');
         }
 
         this._insertConnectExitNodeMenuItem(submenuItem);
@@ -219,7 +256,7 @@ var MenuItemConnect = class MenuItemConnect extends PopupMenu.PopupSubMenuMenuIt
     }
 
     if (!this.label.text) {
-      this.label.text = _('Connected');
+      this.label.text = _('Online');
     }
 
     this._connectSwitchBtn.label.text = _('Disconnect');
