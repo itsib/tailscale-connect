@@ -11,6 +11,7 @@ const { MenuItemSettings } = Me.imports.modules['ui-menu-item-settings'];
 const { MenuItemConnect } = Me.imports.modules['ui-menu-item-connect'];
 const { MenuItemAcceptRoutes } = Me.imports.modules['ui-menu-item-accept-routes'];
 const { MenuItemShieldsUp } = Me.imports.modules['ui-menu-item-shields-up'];
+const { MenuItemHealthMgs } = Me.imports.modules['ui-menu-item-health-mgs'];
 const { getState, destroyState } = Me.imports.modules['ts-state'];
 
 const _ = ExtensionUtils.gettext;
@@ -22,30 +23,41 @@ class AppMenuButtonWidget extends PanelMenu.Button {
   _init() {
     super._init(0.5, _('Tailscale Main Menu'));
 
-    const tsState = getState();
+    this._tsState = getState();
 
     // Subscribe to open/close menu popup
     this.menu.connect('open-state-changed', (menu, open) => {
-      if (open) {
-        tsState.refresh(true);
-      }
+      open && this._tsState.refresh(true);
       Logger.info(open ? `Menu open` : 'Menu close');
     });
 
+    this._tsState.connect('notify::health', this._onHealthChange.bind(this));
+
     // Tray icon
-    this.add_child(new TrayIcon(tsState));
+    this.add_child(new TrayIcon(this._tsState));
 
     // Menu items
-    this.menu.addMenuItem(new MenuItemConnect(tsState));
-    this.menu.addMenuItem(new MenuItemAcceptRoutes(tsState));
-    this.menu.addMenuItem(new MenuItemShieldsUp(tsState));
+    this.menu.addMenuItem(new MenuItemConnect(this._tsState));
+    this.menu.addMenuItem(new MenuItemAcceptRoutes(this._tsState));
+    this.menu.addMenuItem(new MenuItemShieldsUp(this._tsState));
     this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
     this.menu.addMenuItem(new MenuItemSettings());
   }
 
   destroy() {
     destroyState();
+    this._tsState = null;
     super.destroy();
+  }
+
+  _onHealthChange() {
+    const health = this._tsState.health.trim();
+    if (!health) {
+      return;
+    }
+
+
+    Logger.info(health);
   }
 }
 

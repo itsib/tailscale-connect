@@ -1,13 +1,10 @@
 const { GObject, Gio } = imports.gi;
-const Main = imports.ui.main;
-const NotificationDaemon = imports.ui.notificationDaemon;
 const PopupMenu = imports.ui.popupMenu;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const _ = ExtensionUtils.gettext;
 
 
-const { setExitNode } = Me.imports.modules.shell;
 const { Logger } = Me.imports.modules.logger;
 const { StoreKey  } = Me.imports.modules.utils;
 

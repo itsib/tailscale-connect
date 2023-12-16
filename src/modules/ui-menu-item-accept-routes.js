@@ -23,7 +23,7 @@ var MenuItemAcceptRoutes = class MenuItemAcceptRoutes extends PopupMenu.PopupIma
 
   /**
    *
-   * @param {GObject.Object} tsState
+   * @param {TsState} tsState
    */
   constructor(tsState) {
     const settings = ExtensionUtils.getSettings();
@@ -40,11 +40,28 @@ var MenuItemAcceptRoutes = class MenuItemAcceptRoutes extends PopupMenu.PopupIma
 
     this._tsState.connect('notify::health', this._handleHealth.bind(this));
 
+    this._tsState.connect('notify::state', this._onStateChange.bind(this));
+
     this.set_property('switchIsOn', enabled);
+    this.sensitive = this._tsState.state > 0;
   }
 
+  /**
+   *
+   * @param {TsState} self
+   * @private
+   */
   _handleHealth(self) {
     Logger.info(self.health || 'Healthy');
+  }
+
+  /**
+   *
+   * @param {TsState} self
+   * @private
+   */
+  _onStateChange(self) {
+    this.sensitive = self.state > 0;
   }
 
   /**

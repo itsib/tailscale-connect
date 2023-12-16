@@ -9,7 +9,18 @@ const { StoreKey  } = Me.imports.modules.utils;
 const _ = ExtensionUtils.gettext;
 
 const getIcon = id => {
-
+  switch (id) {
+    case -2:
+      return Gio.icon_new_for_string(Me.path + '/icons/icon-bug.svg');
+    case -1:
+      return Gio.icon_new_for_string(Me.path + '/icons/icon-key.svg');
+    case 0:
+      return Gio.icon_new_for_string(Me.path + '/icons/icon-wifi-off.svg');
+    case 1:
+      return Gio.icon_new_for_string(Me.path + '/icons/icon-wifi.svg');
+    case 2:
+      return Gio.icon_new_for_string(Me.path + '/icons/icon-vpn-lock.svg');
+  }
 }
 
 class ConnectExitNodePopupMenuItem extends PopupMenu.PopupMenuItem {
@@ -20,7 +31,7 @@ class ConnectExitNodePopupMenuItem extends PopupMenu.PopupMenuItem {
 
   /**
    *
-   * @param {GObject.Object} tsState
+   * @param {TsState} tsState
    * @param {TsNode | undefined} tsNode
    */
   constructor(tsState, tsNode) {
@@ -72,15 +83,8 @@ var MenuItemConnect = class MenuItemConnect extends PopupMenu.PopupSubMenuMenuIt
   constructor(tsState) {
     super(_('Disconnected') , true);
 
-    const icons = [
-      Gio.icon_new_for_string(Me.path + '/icons/icon-key.svg'),
-      Gio.icon_new_for_string(Me.path + '/icons/icon-wifi-off.svg'),
-      Gio.icon_new_for_string(Me.path + '/icons/icon-wifi.svg'),
-      Gio.icon_new_for_string(Me.path + '/icons/icon-vpn-lock.svg'),
-    ];
-
     // Icon
-    this.icon.gicon = icons[0]
+    this.icon.gicon = getIcon(0);
     this.icon.set_x_expand(false);
 
     // Menu item style
@@ -88,12 +92,10 @@ var MenuItemConnect = class MenuItemConnect extends PopupMenu.PopupSubMenuMenuIt
 
     this._tsState = tsState;
     this._tsState.connect('notify::state', self => {
-      this.icon.gicon = icons[self.state + 1];
-      this.updateMenuAndSubmenu(self);
+
+      this.rerender(self);
     });
-    this._tsState.connect('notify::exitNode', self => {
-      this.updateMenuAndSubmenu(self);
-    });
+    this._tsState.connect('notify::exitNode', this.rerender.bind(this));
 
     this.menu.connect('open-state-changed', this._setIsOpenState.bind(this));
 
@@ -117,10 +119,13 @@ var MenuItemConnect = class MenuItemConnect extends PopupMenu.PopupSubMenuMenuIt
    * Rerender label by changed state
    * @param {GObject} tsState
    */
-  updateMenuAndSubmenu(tsState) {
+  rerender(tsState) {
     if (this.expanded) {
       return;
     }
+
+    this.icon.gicon = getIcon(tsState.state);
+
     if (tsState.state === -1) {
       return this._applyNeedLoginState();
     } else if (tsState.state === 0) {

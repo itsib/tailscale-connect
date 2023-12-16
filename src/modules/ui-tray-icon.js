@@ -44,7 +44,7 @@ var TrayIcon = class TrayIcon extends St.BoxLayout {
   }
 
   _onChangeState(tsState) {
-    if (tsState.health) {
+    if (tsState.health && tsState.state > 0) {
       this._icon.gicon = getIcon('warning');
     } else if (tsState.state === ConnectionState.NeedLogin) {
       this._icon.gicon = getIcon('error');

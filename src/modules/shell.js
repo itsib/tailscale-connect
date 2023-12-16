@@ -67,7 +67,7 @@ var login = (flags) => {
   const commands = ['pkexec', 'tailscale', 'up', '--reset', '--timeout=3s'];
 
   if (flags.operator) commands.push(`--operator=${flags.operator}`);
-  if (flags.acceptRoutes) commands.push('--accept-routes');
+  if (flags.acceptRoutes) commands.push('--accept-routes=true');
 
   return shell(commands, Gio.SubprocessFlags.STDERR_MERGE | Gio.SubprocessFlags.STDOUT_PIPE)
     .then(output => {
@@ -100,9 +100,6 @@ var logout = () => {
       }
 
       throw error;
-    })
-    .then(() => {
-      Main.notify(_('You\'re logged out from Tailscale'));
     })
     .catch(error => showNotifyError(error));
 }

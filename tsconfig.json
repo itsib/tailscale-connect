@@ -8,7 +8,6 @@
   },
   "include": [],
   "files": [
-    "src/extension.ts",
     "src/types.d.ts"
   ]
 }
