@@ -28,8 +28,9 @@ function copySourcesToProject() {
 
   // Copy others
   copyDir('src/prefs-ui', 'dist/prefs-ui');
+  copyDir('src/ext-ui', 'dist/ext-ui');
   copyDir('src/icons', 'dist/icons');
-  copyDir('src/modules', 'dist/modules');
+  copyDir('src/libs', 'dist/libs');
   copyDir('src/schemas', 'dist/schemas');
 }
 

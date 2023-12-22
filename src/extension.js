@@ -1,101 +1,159 @@
-const { GObject } = imports.gi;
+/**
+ * Types definition
+ * @typedef ExtensionMetadata
+ * @type {object}
+ * @property {string} uuid
+ * @property {?string} name
+ * @property {?string} description
+ * @property {string} version - This field is the submission version of an extension, incremented and controlled by the GNOME Extensions website.
+ * @property {?string} url
+ * @property {?string[]} shell-version
+ * @property {string} settings-schema
+ * @property {string} gettext-domain
+ * @property {?string} donations
+ *
+ *
+ * @typedef Extension
+ * @type {object}
+ * @property {string} uuid
+ * @property {ExtensionType} type
+ * @property {ExtensionState} state
+ * @property {string} path
+ * @property {string} error
+ * @property {boolean} hasPrefs
+ * @property {boolean} hasUpdate
+ * @property {Array<'user' | 'system' | string>} sessionModes
+ * @property {ExtensionMetadata} metadata
+ *
+ */
+
+const { GLib  } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Main = imports.ui.main;
-const PanelMenu = imports.ui.panelMenu;
-const PopupMenu = imports.ui.popupMenu;
 const Me = ExtensionUtils.getCurrentExtension();
+const { require } = Me.imports.libs.utils;
 
-const { Logger } = Me.imports.modules.logger;
-const { TrayIcon } = Me.imports.modules['ui-tray-icon'];
-const { MenuItemSettings } = Me.imports.modules['ui-menu-item-settings'];
-const { MenuItemConnect } = Me.imports.modules['ui-menu-item-connect'];
-const { MenuItemAcceptRoutes } = Me.imports.modules['ui-menu-item-accept-routes'];
-const { MenuItemShieldsUp } = Me.imports.modules['ui-menu-item-shields-up'];
-const { MenuItemHealthMgs } = Me.imports.modules['ui-menu-item-health-mgs'];
-const { getState, destroyState } = Me.imports.modules['ts-state'];
+const { TrayMenu } = require('ext-ui/tray-menu');
+const { Logger, Level } = require('libs/logger');
+const { Storage } = require('libs/storage');
+const { MenuAlignment, SettingsKey } = require('libs/utils');
 
-const _ = ExtensionUtils.gettext;
+class TsConnectExtension {
+  /**
+   * Logger instance
+   * @type {Logger | null}
+   * @private
+   */
+  _logger = null;
+  /**
+   * App storage
+   * @type {Storage | null}
+   * @private
+   */
+  _storage = null;
+  /**
+   *
+   * @type {null}
+   * @private
+   */
+  _logLevelSub = null;
+  /**
+   * Settings instance
+   * @type {null}
+   * @private
+   */
+  _settings = null;
+  /**
+   * Tray menu button instance
+   * @type {TrayMenu|null}
+   * @private
+   */
+  _menu = null;
+  /**
+   * Refresh timer
+   * @private {number|null}
+   */
+  _timerId = null;
+  /**
+   * Refresh interval for network state
+   * @type {number}
+   * @private
+   */
+  _updIntervalSec = 10;
 
-// Dropdown menu integrated in tray icon.
-class AppMenuButtonWidget extends PanelMenu.Button {
-  static { GObject.registerClass(this) }
-
-  _init() {
-    super._init(0.5, _('Tailscale Main Menu'));
-
-    this._tsState = getState();
-
-    // Subscribe to open/close menu popup
-    this.menu.connect('open-state-changed', (menu, open) => {
-      open && this._tsState.refresh(true);
-      Logger.info(open ? `Menu open` : 'Menu close');
-    });
-
-    this._tsState.connect('notify::health', this._onHealthChange.bind(this));
-
-    // Tray icon
-    this.add_child(new TrayIcon(this._tsState));
-
-    // Menu items
-    this.menu.addMenuItem(new MenuItemConnect(this._tsState));
-    this.menu.addMenuItem(new MenuItemAcceptRoutes(this._tsState));
-    this.menu.addMenuItem(new MenuItemShieldsUp(this._tsState));
-    this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-    this.menu.addMenuItem(new MenuItemSettings());
-  }
-
-  destroy() {
-    destroyState();
-    this._tsState = null;
-    super.destroy();
-  }
-
-  _onHealthChange() {
-    const health = this._tsState.health.trim();
-    if (!health) {
-      return;
-    }
-
-
-    Logger.info(health);
-  }
-}
-
-// Extension connector
-class TailscaleConnectExtension {
-  _indicator = null;
-
-  constructor(uuid) {
-    this._uuid = uuid;
+  /**
+   *
+   * @param metadata {ExtensionMetadata}
+   */
+  constructor(metadata) {
+    this._uuid = metadata.uuid;
+    this._domain = metadata['gettext-domain'] ?? 'ts-connect';
   }
 
   enable() {
-    Logger.info('🟢 Extension enabled');
+    this._logger = new Logger(this._domain);
+    this._storage = new Storage(this._logger);
+    this._menu = new TrayMenu({ logger: this._logger, storage: this._storage });
+    this._settings = ExtensionUtils.getSettings();
+    this._logger.setLevel(this._settings.get_int(SettingsKey.LogLevel));
+    this._logLevelSub = this._settings.connect(`changed::${SettingsKey.LogLevel}`, this._onLogLevelChange.bind(this));
 
-    this._indicator = new AppMenuButtonWidget();
+    Main.panel.addToStatusArea(this._uuid, this._menu, MenuAlignment.Center, 'right');
 
-    Main.panel.addToStatusArea(this._uuid, this._indicator, 0, 'right');
+    this._timerId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, this._updIntervalSec, this._refresh.bind(this));
+
+    this._logger.info('Extension enabled +++');
   }
 
   disable() {
-    this._indicator.destroy();
-    this._indicator = null;
+    if (this._timerId !== null) {
+      GLib.Source.remove(this._timerId);
+      this._timerId = null;
+    }
 
-    Logger.info('🔴 Extension disabled');
+    if (this._logLevelSub !== null && this._settings) {
+      this._settings.disconnect(this._logLevelSub)
+      this._logLevelSub = null;
+    }
+    this._settings = null;
+
+    this._menu.destroy();
+    this._menu = null;
+
+    this._storage.destroy()
+    this._storage = null;
+
+    this._logger.info('Extension disabled ---');
+    this._logger = null;
+  }
+
+  _refresh() {
+    this._logger.debug('Refresh storage state by interval');
+
+    this._storage.refresh();
+
+    return GLib.SOURCE_CONTINUE;
+  }
+
+  _onLogLevelChange(settings) {
+    const logLevel = settings.get_int(SettingsKey.LogLevel);
+
+    this._logger.setLevel(Level.Debug);
+    this._logger.info(`Log level updated to ${logLevel}`);
+
+    this._logger.setLevel(logLevel);
   }
 }
 
 /**
  * Extension initialization
- * @param meta {ExtensionMetadata}
- * @returns {TailscaleConnectExtension}
+ * @returns {TsConnectExtension}
  */
 function init(meta) {
-  // let theme = Gtk.IconTheme.get_default();
-  // theme.append_search_path(Me.path + "/icons");
 
-  ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
-  return new TailscaleConnectExtension(meta.uuid);
+  ExtensionUtils.initTranslations(meta.metadata['gettext-domain']);
+
+  return new TsConnectExtension(meta.metadata);
 }
 
 

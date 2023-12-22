@@ -14,15 +14,13 @@
     "reload": "./scripts/reload.sh",
     "logs": "./scripts/journal.sh"
   },
-  "dependencies": {
+  "devDependencies": {
     "@girs/gjs": "^3.2.3",
     "@girs/gnome-shell": "^3.0.0",
-    "@girs/gtk-4.0": "^4.10.5-3.2.3"
-  },
-  "devDependencies": {
+    "@girs/gtk-4.0": "^4.10.5-3.2.3",
     "@types/node": "^18.18.9",
     "adm-zip": "^0.5.10",
     "esbuild": "^0.17.19",
-    "typescript": "^5.0.4"
+    "jsdoc": "~4.0.2"
   }
 }

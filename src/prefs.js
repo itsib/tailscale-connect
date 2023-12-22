@@ -2,51 +2,53 @@ const { GObject, Gtk, Adw } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
+const { require, SettingsKey } = Me.imports.libs.utils;
 
-const { Logger } = Me.imports.modules.logger;
-const { RefreshIntervalControl } = Me.imports['prefs-ui']['ui-refresh-interval-control'];
-const { LoginServerControl } = Me.imports['prefs-ui']['ui-login-server-control'];
-const { OperatorControl } = Me.imports['prefs-ui']['ui-operator-control'];
-const { LogLevelControl } = Me.imports['prefs-ui']['ui-log-level-control'];
-const { AcceptRoutesControl } = Me.imports['prefs-ui']['ui-accept-routes-control'];
-const { ShieldsUpControl } = Me.imports['prefs-ui']['ui-shields-up-control'];
+const { Logger } = require('libs/logger');
+const { LoginServerControl } = require('prefs-ui/login-server-control');
+const { OperatorControl } = require('prefs-ui/operator-control');
+const { LogLevelControl } = require('prefs-ui/log-level-control');
+const { AcceptRoutesControl } = require('prefs-ui/accept-routes-control');
+const { ShieldsUpControl } = require('prefs-ui/shields-up-control');
 
 const _ = ExtensionUtils.gettext;
 
 class PreferencesWidget extends Gtk.Box {
   static { GObject.registerClass(this) }
 
-  _init() {
-    super._init({
-      orientation: Gtk.Orientation.VERTICAL,
-      spacing: 20,
+  constructor() {
+    super({ orientation: Gtk.Orientation.VERTICAL, spacing: 20 });
+
+    // Init and subscribe to change the log level
+    const settings = ExtensionUtils.getSettings();
+    this._logger = new Logger(Me.metadata['gettext-domain'] + '-prefs');
+    this._logger.setLevel(settings.get_int(SettingsKey.LogLevel));
+    settings.connect(`changed::${SettingsKey.LogLevel}`, () => {
+      this._logger.setLevel(settings.get_int(SettingsKey.LogLevel));
     });
 
+    // Init Network Configuration
     const flagsGroup = new Adw.PreferencesGroup({
       name: Me.metadata.name,
-      title: _('Connection'),
+      title: _('Network Configuration'),
       description: _(`Sets the parameters for startup and connecting your device to the Tailscale`),
     });
-
-    flagsGroup.add(new LoginServerControl());
-    flagsGroup.add(new OperatorControl());
-    flagsGroup.add(new AcceptRoutesControl());
-    flagsGroup.add(new ShieldsUpControl());
+    flagsGroup.add(new LoginServerControl(this._logger));
+    flagsGroup.add(new OperatorControl(this._logger));
+    flagsGroup.add(new AcceptRoutesControl(this._logger));
+    flagsGroup.add(new ShieldsUpControl(this._logger));
     this.append(flagsGroup);
 
-
+    // Init Debugging
     const prefsGroup = new Adw.PreferencesGroup({
       name: Me.metadata.name,
-      title: _('Appearance'),
-      description: _(`Configure the appearance of ${Me.metadata.name}`),
+      title: _('Debugging'),
+      description: _(`Settings for debugging the extension ${Me.metadata.name}`),
     })
-
-    prefsGroup.add(new RefreshIntervalControl());
-    prefsGroup.add(new LogLevelControl());
-
+    prefsGroup.add(new LogLevelControl(this._logger));
     this.append(prefsGroup);
 
-    Logger.info('🛠  PreferencesWidget initialized');
+    this._logger.debug('Preferences Widget initialized');
   }
 }
 

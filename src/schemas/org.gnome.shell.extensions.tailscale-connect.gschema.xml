@@ -19,7 +19,7 @@
         <key name="log-level" type="i">
             <default>0</default>
             <summary>Log Level</summary>
-            <description>Which messages will be displayed in the log. If you select "Info", Error, Warning and Info will be visible.</description>
+            <description>Which messages will be displayed in the log.</description>
         </key>
         <key name="accept-routes" type="b">
             <default>false</default>
