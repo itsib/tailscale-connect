@@ -12,21 +12,6 @@ const { networkUp, networkDown, setExitNode, login, logout } = require('libs/she
 
 const _ = ExtensionUtils.gettext;
 
-const getIcon = id => {
-  switch (id) {
-    case -2:
-      return Gio.icon_new_for_string(Me.path + '/icons/icon-bug.svg');
-    case -1:
-      return Gio.icon_new_for_string(Me.path + '/icons/icon-key.svg');
-    case 0:
-      return Gio.icon_new_for_string(Me.path + '/icons/icon-wifi-off.svg');
-    case 1:
-      return Gio.icon_new_for_string(Me.path + '/icons/icon-wifi.svg');
-    case 2:
-      return Gio.icon_new_for_string(Me.path + '/icons/icon-vpn-lock.svg');
-  }
-}
-
 class ConnectExitNodePopupMenuItem extends PopupMenu.PopupMenuItem {
   static [GObject.properties] = {
     enabled: GObject.ParamSpec.boolean('enabled', 'enabled', 'This node is used', GObject.ParamFlags.READWRITE, false),
@@ -76,6 +61,14 @@ class ConnectExitNodePopupMenuItem extends PopupMenu.PopupMenuItem {
 }
 
 /**
+ * @typedef {import(@girs/gnome-shell/src/ui/popupMenu.d.ts)} PopupMenu
+ * @property {PopupMenu.PopupSubMenuMenuItem} PopupSubMenuMenuItem
+ * @property {PopupMenu.PopupBaseMenuItem} PopupBaseMenuItem
+ *
+ * @class
+ * @extends PopupMenu.PopupSubMenuMenuItem
+ * @extends PopupMenu.PopupBaseMenuItem
+ * @type {BtnConnect}
  * @exports
  */
 var BtnConnect = class BtnConnect extends PopupMenu.PopupSubMenuMenuItem {
@@ -94,8 +87,15 @@ var BtnConnect = class BtnConnect extends PopupMenu.PopupSubMenuMenuItem {
 
     this._logger = logger;
 
-    // Icon
-    this.icon.gicon = getIcon(0);
+    this._icons = {
+      [-2]: 'network-error-symbolic',
+      [-1]: 'network-wired-no-route-symbolic', // Logged Out
+      [0]: 'network-wired-disconnected-symbolic',
+      [1]: 'network-wired-symbolic',
+      [2]: 'network-vpn-symbolic',
+    };
+
+    this.icon.icon_name = this._icons[0];
     this.icon.set_x_expand(false);
 
     // Menu item style
@@ -132,7 +132,7 @@ var BtnConnect = class BtnConnect extends PopupMenu.PopupSubMenuMenuItem {
       return;
     }
 
-    this.icon.gicon = getIcon(storage.state);
+    this.icon.icon_name = this._icons[storage.state];
 
     if (storage.state === -1) {
       return this._applyNeedLoginState();

@@ -71,6 +71,7 @@ var TrayMenu = class TrayMenu extends PanelMenu.Button {
 
     // Menu items
     this.menu.addMenuItem(new BtnConnect(this._logger, this._storage));
+    this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
     this.menu.addMenuItem(new BtnAcceptRoutes(this._logger, this._storage));
     this.menu.addMenuItem(new BtnShieldsUp(this._logger, this._storage));
     this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());

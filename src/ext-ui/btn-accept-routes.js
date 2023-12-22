@@ -9,18 +9,17 @@ const { require, SettingsKey } = Me.imports.libs.utils;
 
 const { setAcceptRoutes } = require('libs/shell');
 
-const getIcon = id => {
-  switch (id) {
-    case 'on':
-      return Gio.icon_new_for_string(`${Me.path}/icons/check.svg`);
-    case 'off':
-      return Gio.icon_new_for_string(`${Me.path}/icons/minus.svg`);
-  }
-};
-
 /**
- * @exports
+ * @typedef {import(@girs/gnome-shell/src/ui/popupMenu.d.ts)} PopupMenu
+ * @property {PopupMenu.PopupImageMenuItem} PopupImageMenuItem
+ * @property {PopupMenu.PopupBaseMenuItem} PopupBaseMenuItem
+ *
+ * @class
+ * @extends PopupMenu.PopupImageMenuItem
+ * @extends PopupMenu.PopupBaseMenuItem
  * @type {BtnAcceptRoutes}
+ * @property {boolean} switchIsOn
+ * @exports
  */
 var BtnAcceptRoutes = class BtnAcceptRoutes extends PopupMenu.PopupImageMenuItem {
   static [GObject.properties] = {
@@ -36,7 +35,7 @@ var BtnAcceptRoutes = class BtnAcceptRoutes extends PopupMenu.PopupImageMenuItem
     const settings = ExtensionUtils.getSettings();
     const enabled = settings.get_boolean(SettingsKey.AcceptRoutes);
 
-    super(_('Accept Routes'), getIcon(enabled ? 'on' : 'off'), { style_class: 'ts-menu-item' });
+    super(_('Accept Routes'), 'emblem-ok-symbolic', { style_class: 'ts-menu-item' });
 
     this._blockHandler = false;
     this._logger = logger;
@@ -99,7 +98,7 @@ var BtnAcceptRoutes = class BtnAcceptRoutes extends PopupMenu.PopupImageMenuItem
     this._logger.info('On change settings accept routes', newValue);
 
     this.set_property('switchIsOn', newValue);
-    this.setIcon(getIcon(newValue ? 'on' : 'off'));
+    this._icon.set_opacity(newValue ? 255 : 0);
 
     // If connected we send command
     if (this._storage.state > 0) {
@@ -127,7 +126,7 @@ var BtnAcceptRoutes = class BtnAcceptRoutes extends PopupMenu.PopupImageMenuItem
    */
   _setValueSilent(value) {
     this.set_property('switchIsOn', value);
-    this.setIcon(getIcon(value ? 'on' : 'off'));
+    this._icon.set_opacity(value ? 255 : 0)
 
     this._settings.block_signal_handler(this._subscriptionId);
 

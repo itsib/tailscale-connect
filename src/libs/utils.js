@@ -24,7 +24,6 @@ var MenuAlignment = Object.freeze({
  * @enum {string}
  */
 var SettingsKey = Object.freeze({
-  RefreshInterval: 'refresh-interval',
   LoginServer: 'login-server',
   Operator: 'operator',
   LogLevel: 'log-level',

@@ -10,6 +10,14 @@ const _ = ExtensionUtils.gettext;
 const { SettingsKey } = Me.imports.libs.utils;
 
 /**
+ * @typedef {import(@girs/gnome-shell/src/ui/popupMenu.d.ts)} PopupMenu
+ * @property {PopupMenu.PopupImageMenuItem} PopupImageMenuItem
+ * @property {PopupMenu.PopupBaseMenuItem} PopupBaseMenuItem
+ *
+ * @class
+ * @extends PopupMenu.PopupImageMenuItem
+ * @extends PopupMenu.PopupBaseMenuItem
+ * @type {BtnShieldsUp}
  * @exports
  */
 var BtnShieldsUp = class BtnShieldsUp extends PopupMenu.PopupImageMenuItem {
@@ -26,18 +34,19 @@ var BtnShieldsUp = class BtnShieldsUp extends PopupMenu.PopupImageMenuItem {
     const settings = ExtensionUtils.getSettings();
     const enabled = settings.get_boolean('shields-up');
     const icon = [
-      Gio.icon_new_for_string(`${Me.path}/icons/minus.svg`),
-      Gio.icon_new_for_string(`${Me.path}/icons/check.svg`),
+      '',
+      'emblem-ok-symbolic',
     ];
 
-    super(_('Block Incoming'), icon[+enabled], { style_class: ' ts-menu-item' });
+    super(_('Block Incoming'), 'emblem-ok-symbolic', { style_class: ' ts-menu-item' });
 
     this._logger = logger;
     this._storage = storage;
     this._settings = settings;
 
+    this._icon.set_opacity(enabled ? 255 : 0)
     this.connect('notify::enabled', () => {
-      this.setIcon(icon[+this.enabled]);
+      this._icon.set_opacity(this.enabled ? 255 : 0)
     })
 
     this.connect('activate', () => {

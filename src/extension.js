@@ -147,10 +147,10 @@ class TsConnectExtension {
 
 /**
  * Extension initialization
+ * @param {Extension} meta
  * @returns {TsConnectExtension}
  */
 function init(meta) {
-
   ExtensionUtils.initTranslations(meta.metadata['gettext-domain']);
 
   return new TsConnectExtension(meta.metadata);
