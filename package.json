@@ -8,19 +8,15 @@
   "main": "dist/extension.js",
   "scripts": {
     "clean": "rm -rf dist",
-    "build:app": "node esbuild.js",
-    "build": "npm run clean && npm run build:app",
-    "validate": "tsc --noEmit",
+    "build": "node scripts/build.js",
     "reload": "./scripts/reload.sh",
-    "logs": "./scripts/journal.sh"
+    "logs": "./scripts/logs.sh"
   },
   "devDependencies": {
     "@girs/gjs": "^3.2.3",
     "@girs/gnome-shell": "^3.0.0",
     "@girs/gtk-4.0": "^4.10.5-3.2.3",
     "@types/node": "^18.18.9",
-    "adm-zip": "^0.5.10",
-    "esbuild": "^0.17.19",
-    "jsdoc": "~4.0.2"
+    "adm-zip": "^0.5.10"
   }
 }

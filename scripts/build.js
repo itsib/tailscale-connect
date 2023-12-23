@@ -1,30 +1,32 @@
 const fs = require('fs');
 const { resolve } = require('path');
 const AdmZip = require('adm-zip');
-const metadata = require('./src/metadata.json');
+const metadata = require('../src/metadata.json');
 const { execSync } = require('child_process');
+
+const rootDir = `${__dirname}/..`
 
 function copySourcesToProject() {
   const copyDir = (source, destination) => {
-    const sourceFullPath = resolve(__dirname, source);
-    const destinationFullPath = resolve(__dirname, destination);
+    const sourceFullPath = resolve(rootDir, source);
+    const destinationFullPath = resolve(rootDir, destination);
     fs.mkdirSync(destinationFullPath);
     for (const file of fs.readdirSync(sourceFullPath)) {
       fs.copyFileSync(resolve(sourceFullPath, file), resolve(destinationFullPath, file))
     }
   }
 
-  fs.mkdirSync(resolve(__dirname, 'dist'));
+  fs.mkdirSync(resolve(rootDir, 'dist'));
 
   // Copy metadata.json
-  fs.copyFileSync(resolve(__dirname, 'src/extension.js'), resolve(__dirname, 'dist/extension.js'))
-  fs.copyFileSync(resolve(__dirname, 'src/prefs.js'), resolve(__dirname, 'dist/prefs.js'))
+  fs.copyFileSync(resolve(rootDir, 'src/extension.js'), resolve(rootDir, 'dist/extension.js'))
+  fs.copyFileSync(resolve(rootDir, 'src/prefs.js'), resolve(rootDir, 'dist/prefs.js'))
 
   // Copy metadata.json
-  fs.copyFileSync(resolve(__dirname, 'src/metadata.json'), resolve(__dirname, 'dist/metadata.json'))
+  fs.copyFileSync(resolve(rootDir, 'src/metadata.json'), resolve(rootDir, 'dist/metadata.json'))
 
   // Copy styles
-  fs.copyFileSync(resolve(__dirname, 'src/stylesheet.css'), resolve(__dirname, 'dist/stylesheet.css'))
+  fs.copyFileSync(resolve(rootDir, 'src/stylesheet.css'), resolve(rootDir, 'dist/stylesheet.css'))
 
   // Copy others
   copyDir('src/prefs-ui', 'dist/prefs-ui');
@@ -35,14 +37,14 @@ function copySourcesToProject() {
 }
 
 function buildSchemas() {
-  execSync(`glib-compile-schemas ${resolve(__dirname, 'dist/schemas/')}`);
+  execSync(`glib-compile-schemas ${resolve(rootDir, 'dist/schemas/')}`);
 }
 
 function zipPackExtension(zipFilename) {
   // Pack extension
-  const zipDist = resolve(__dirname, zipFilename);
+  const zipDist = resolve(rootDir, zipFilename);
   const zip = new AdmZip();
-  zip.addLocalFolder(resolve(__dirname, 'dist'));
+  zip.addLocalFolder(resolve(rootDir, 'dist'));
   zip.writeZip(zipDist);
 }
 
