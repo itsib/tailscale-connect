@@ -26,14 +26,13 @@
  * @property {ExtensionMetadata} metadata
  *
  */
-
 const { GLib  } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Main = imports.ui.main;
 const Me = ExtensionUtils.getCurrentExtension();
 const { require } = Me.imports.libs.utils;
 
-const { TrayMenu } = require('ext-ui/tray-menu');
+const { TSTrayMenu } = require('ext-ui/tray-menu');
 const { Logger, Level } = require('libs/logger');
 const { Storage } = require('libs/storage');
 const { MenuAlignment, SettingsKey } = require('libs/utils');
@@ -59,13 +58,13 @@ class TsConnectExtension {
   _logLevelSub = null;
   /**
    * Settings instance
-   * @type {null}
+   * @type {Gio.Settings}
    * @private
    */
   _settings = null;
   /**
    * Tray menu button instance
-   * @type {TrayMenu|null}
+   * @type {TSTrayMenu|null}
    * @private
    */
   _menu = null;
@@ -93,7 +92,7 @@ class TsConnectExtension {
   enable() {
     this._logger = new Logger(this._domain);
     this._storage = new Storage(this._logger);
-    this._menu = new TrayMenu({ logger: this._logger, storage: this._storage });
+    this._menu = new TSTrayMenu({ logger: this._logger, storage: this._storage });
     this._settings = ExtensionUtils.getSettings();
     this._logger.setLevel(this._settings.get_int(SettingsKey.LogLevel));
     this._logLevelSub = this._settings.connect(`changed::${SettingsKey.LogLevel}`, this._onLogLevelChange.bind(this));

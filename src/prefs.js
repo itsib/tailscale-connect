@@ -1,5 +1,4 @@
 const { GObject, Gtk, Adw } = imports.gi;
-
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const { require, SettingsKey } = Me.imports.libs.utils;
@@ -8,23 +7,27 @@ const { Logger } = require('libs/logger');
 const { LoginServerControl } = require('prefs-ui/login-server-control');
 const { OperatorControl } = require('prefs-ui/operator-control');
 const { LogLevelControl } = require('prefs-ui/log-level-control');
-const { AcceptRoutesControl } = require('prefs-ui/accept-routes-control');
-const { ShieldsUpControl } = require('prefs-ui/shields-up-control');
+const { AdvertiseExitNodeControl } = require('prefs-ui/advertise-exit-node-control');
+const { AdvertiseTagsControl } = require('prefs-ui/advertise-tags-control');
 
 const _ = ExtensionUtils.gettext;
 
-class PreferencesWidget extends Gtk.Box {
+class PreferencesWidget extends Adw.PreferencesPage {
   static { GObject.registerClass(this) }
 
   constructor() {
-    super({ orientation: Gtk.Orientation.VERTICAL, spacing: 20 });
+    super({
+      name: 'general',
+      title: _('%s Preferences').format(Me.metadata.name),
+      icon_name: 'preferences-system-symbolic',
+    });
 
     // Init and subscribe to change the log level
-    const settings = ExtensionUtils.getSettings();
+    this._settings = ExtensionUtils.getSettings();
     this._logger = new Logger(Me.metadata['gettext-domain'] + '-prefs');
-    this._logger.setLevel(settings.get_int(SettingsKey.LogLevel));
-    settings.connect(`changed::${SettingsKey.LogLevel}`, () => {
-      this._logger.setLevel(settings.get_int(SettingsKey.LogLevel));
+    this._logger.setLevel(this._settings.get_int(SettingsKey.LogLevel));
+    this._settings.connect(`changed::${SettingsKey.LogLevel}`, () => {
+      this._logger.setLevel(this._settings.get_int(SettingsKey.LogLevel));
     });
 
     // Init Network Configuration
@@ -35,9 +38,9 @@ class PreferencesWidget extends Gtk.Box {
     });
     flagsGroup.add(new LoginServerControl(this._logger));
     flagsGroup.add(new OperatorControl(this._logger));
-    flagsGroup.add(new AcceptRoutesControl(this._logger));
-    flagsGroup.add(new ShieldsUpControl(this._logger));
-    this.append(flagsGroup);
+    flagsGroup.add(new AdvertiseExitNodeControl(this._logger));
+    flagsGroup.add(new AdvertiseTagsControl(this._logger));
+    this.add(flagsGroup);
 
     // Init Debugging
     const prefsGroup = new Adw.PreferencesGroup({
@@ -46,7 +49,10 @@ class PreferencesWidget extends Gtk.Box {
       description: _(`Settings for debugging the extension ${Me.metadata.name}`),
     })
     prefsGroup.add(new LogLevelControl(this._logger));
-    this.append(prefsGroup);
+    this.add(prefsGroup);
+
+    this.set_visible(true);
+    this.width_request
 
     this._logger.debug('Preferences Widget initialized');
   }

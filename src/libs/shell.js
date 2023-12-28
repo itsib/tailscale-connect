@@ -70,6 +70,52 @@
  * @property {string[]} CertDomains
  * @property {Record<string, Peer>} Peer
  * @property {Record<string, User>} User
+ *
+ * --------------------------------------------------
+ *
+ * @typedef NetworkPrefsUserProfile
+ * @type {Object}
+ * @property {string} ID
+ * @property {string} LoginName
+ * @property {string} DisplayName
+ * @property {string} ProfilePicURL
+ * @property {string[]} Roles
+ *
+ * @typedef NetworkPrefsConfig
+ * @type {Object}
+ * @property {string} NodeID
+ * @property {string} PrivateMachineKey
+ * @property {string} PrivateNodeKey
+ * @property {string} OldPrivateNodeKey
+ * @property {string} Provider
+ * @property {string} NetworkLockKey
+ * @property {NetworkPrefsUserProfile} UserProfile
+ *
+ * @typedef NetworkPrefs
+ * @type {Object}
+ * @property {string} ControlURL
+ * @property {boolean} RouteAll
+ * @property {boolean} AllowSingleHosts
+ * @property {string} ExitNodeID
+ * @property {string} ExitNodeIP
+ * @property {boolean} ExitNodeAllowLANAccess
+ * @property {boolean} CorpDNS
+ * @property {boolean} RunSSH
+ * @property {boolean} RunWebClient
+ * @property {boolean} WantRunning
+ * @property {boolean} LoggedOut
+ * @property {boolean} ShieldsUp
+ * @property {string[]|null} AdvertiseTags
+ * @property {string} Hostname
+ * @property {boolean} NotepadURLs
+ * @property {string[]|null} AdvertiseRoutes
+ * @property {boolean} NoSNAT
+ * @property {number} NetfilterMode
+ * @property {string} OperatorUser
+ * @property {Object} AutoUpdate
+ * @property {boolean} AutoUpdate.Check
+ * @property {boolean} AutoUpdate.Apply
+ * @property {NetworkPrefsConfig} Config
  */
 
 const { Gio } = imports.gi;
@@ -108,21 +154,6 @@ var shell = function shell(commands, flags = Gio.SubprocessFlags.STDOUT_PIPE | G
       });
     } catch (e) {
       return reject(e);
-    }
-  });
-}
-
-/**
- * Try to get tailscale status
- *
- * @return {Promise<NetworkState>}
- */
-var getNetworkState = function getNetworkState()  {
-  return shell(['tailscale', 'status', '--json']).then(result => {
-    try {
-      return JSON.parse(result);
-    } catch (e) {
-      throw e;
     }
   });
 }
@@ -229,6 +260,39 @@ var setAcceptRoutes = function setAcceptRoutes(enabled) {
     .then(result => {
       return result;
     });
+}
+
+/**
+ * Update accept routes flag
+ * @param enabled
+ * @return {Promise<string>}
+ */
+var setShieldsUp = function setAcceptRoutes(enabled) {
+  return shell(['tailscale', 'set', `--shields-up=${enabled}`])
+    .then(result => {
+      return result;
+    });
+}
+
+/**
+ * Try to get tailscale status
+ *
+ * @return {Promise<NetworkState>}
+ */
+var getNetworkState = function getNetworkState()  {
+  return shell(['tailscale', 'status', '--json'])
+    .then(result => JSON.parse(result))
+}
+
+/**
+ * Fetch tailscale settings
+ * @returns {Promise<NetworkPrefs>}
+ */
+var getNetworkPrefs = function getNetworkPrefs() {
+  const script = `echo -e "GET /localapi/v0/prefs HTTP/1.1\\r\\nHost: local-tailscaled.sock\\r\\n" | nc -U -N /var/run/tailscale/tailscaled.sock`;
+
+  return shell(['/bin/bash', '-c', script])
+    .then(response => JSON.parse(response.split(/\r\n/).reverse()[0]))
 }
 
 

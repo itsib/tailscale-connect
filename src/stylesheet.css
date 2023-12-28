@@ -1,12 +1,29 @@
-.tc-menu-box {
-
+.tailscale-status-indicators-box {
+    width: 20px;
+    height: 20px;
+    padding-right: 0;
+    padding-left: 0;
 }
-.tc-menu-box.panel-status-indicators-box {
-    padding: 0;
-    spacing: 0;
-}
-.tc-menu-box.panel-status-indicators-box .system-status-icon {
-    margin: 0 1px;
+.tailscale-status-indicators-box .tailscale-status-icon {
+    width: 13px;
+    height: 13px;
+    margin-left: 0px;
+    margin-right: 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+    overflow: hidden;
+    box-sizing: border-box;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+    border-width: 2px;
+    border-style: solid;
+    -moz-background-clip: padding;
+    -webkit-background-clip: padding;
+    background-clip: padding-box;
 }
 
 .ts-menu-item {
@@ -26,4 +43,10 @@
 .ts-popup-sub-menu-item.ts-connect-btn {
     /*margin-bottom: 8px !important;*/
     /*border-radius: 0 !important;*/
+}
+
+
+acl-tag-label {
+    font-weight: 400 !important;
+    background: #FF0000 !important;
 }

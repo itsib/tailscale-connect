@@ -16,20 +16,15 @@
             <summary>Log Level</summary>
             <description>Which messages will be displayed in the log.</description>
         </key>
-        <key name="accept-routes" type="b">
+        <key name="advertise-exit-node" type="b">
             <default>false</default>
-            <summary>Accept Routes</summary>
-            <description>Accept routes advertised by other Tailscale nodes (default false).</description>
+            <summary>Advertise Exit Node</summary>
+            <description>Offer to be an exit node for internet traffic for the Tailnet. (default false).</description>
         </key>
-        <key name="shields-up" type="b">
-            <default>false</default>
-            <summary>Shields Up</summary>
-            <description>Don't allow incoming connections (default false).</description>
-        </key>
-        <key name="accept-dns" type="b">
-            <default>true</default>
-            <summary>Accept DNS</summary>
-            <description>Accept DNS configuration from the admin panel (default true).</description>
+        <key name="advertise-tags" type="as">
+            <default>[]</default>
+            <summary>Advertise Tags</summary>
+            <description>This device identity or appointment as the combination of tags. (e.g. "tag:eng,tag:montreal,tag:ssh")</description>
         </key>
     </schema>
 </schemalist>

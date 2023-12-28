@@ -13,11 +13,11 @@ const PopupMenu = imports.ui.popupMenu;
 const Me = ExtensionUtils.getCurrentExtension();
 const { require } = Me.imports.libs.utils;
 
-const { BtnSettings } = require('ext-ui/btn-settings');
-const { BtnConnect } = require('ext-ui/btn-connect');
-const { BtnAcceptRoutes } = require('ext-ui/btn-accept-routes');
-const { BtnShieldsUp } = require('ext-ui/btn-shields-up');
-const { TrayIcon, TrayIconType } = require('ext-ui/tray-icon');
+const { TSBtnSettings } = require('ext-ui/btn-settings');
+const { TSBtnConnect } = require('ext-ui/btn-connect');
+const { TSBtnAcceptRoutes } = require('ext-ui/btn-accept-routes');
+const { TSBtnShieldsUp } = require('ext-ui/btn-shields-up');
+const { TSTrayIcon, TrayIconType } = require('ext-ui/tray-icon');
 const { ConnectionState } = require('libs/utils');
 const _ = ExtensionUtils.gettext;
 
@@ -29,10 +29,10 @@ const _ = ExtensionUtils.gettext;
  *
  * @class
  * @extends PanelMenu.Button
- * @type {TrayMenu}
+ * @type {TSTrayMenu}
  * @exports
  */
-var TrayMenu = class TrayMenu extends PanelMenu.Button {
+var TSTrayMenu = class TSTrayMenu extends PanelMenu.Button {
   static { GObject.registerClass(this) }
 
   /**
@@ -66,16 +66,16 @@ var TrayMenu = class TrayMenu extends PanelMenu.Button {
     this._storage.connect('notify::state', this._onChangeState.bind(this));
 
     // Tray icon
-    this._trayIcon = new TrayIcon();
+    this._trayIcon = new TSTrayIcon(this._logger);
     this.add_child(this._trayIcon);
 
     // Menu items
-    this.menu.addMenuItem(new BtnConnect(this._logger, this._storage));
+    this.menu.addMenuItem(new TSBtnConnect(this._logger, this._storage));
     this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-    this.menu.addMenuItem(new BtnAcceptRoutes(this._logger, this._storage));
-    this.menu.addMenuItem(new BtnShieldsUp(this._logger, this._storage));
+    this.menu.addMenuItem(new TSBtnAcceptRoutes(this._logger, this._storage));
+    this.menu.addMenuItem(new TSBtnShieldsUp(this._logger, this._storage));
     this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-    this.menu.addMenuItem(new BtnSettings());
+    this.menu.addMenuItem(new TSBtnSettings());
   }
 
   destroy() {
@@ -113,11 +113,11 @@ var TrayMenu = class TrayMenu extends PanelMenu.Button {
 
   _onChangeState() {
     if (this._storage.health && this._storage.state > 0) {
-      this._trayIcon.setIcon(TrayIconType.Warning);
+      this._trayIcon.setStatus(TrayIconType.Warning);
     } else if (this._storage.state === ConnectionState.NeedLogin) {
-      this._trayIcon.setIcon(TrayIconType.Error);
+      this._trayIcon.setStatus(TrayIconType.Error);
     } else {
-      this._trayIcon.setIcon(this._storage.state);
+      this._trayIcon.setStatus(this._storage.state);
     }
   }
 }

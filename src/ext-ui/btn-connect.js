@@ -68,10 +68,10 @@ class ConnectExitNodePopupMenuItem extends PopupMenu.PopupMenuItem {
  * @class
  * @extends PopupMenu.PopupSubMenuMenuItem
  * @extends PopupMenu.PopupBaseMenuItem
- * @type {BtnConnect}
+ * @type {TSBtnConnect}
  * @exports
  */
-var BtnConnect = class BtnConnect extends PopupMenu.PopupSubMenuMenuItem {
+var TSBtnConnect = class TSBtnConnect extends PopupMenu.PopupSubMenuMenuItem {
   static [GObject.properties] = {
     expanded: GObject.ParamSpec.boolean('expanded', 'expanded', 'expanded', GObject.ParamFlags.READWRITE, false),
   }
@@ -92,7 +92,7 @@ var BtnConnect = class BtnConnect extends PopupMenu.PopupSubMenuMenuItem {
       [-1]: 'network-wired-no-route-symbolic', // Logged Out
       [0]: 'network-wired-disconnected-symbolic',
       [1]: 'network-wired-symbolic',
-      [2]: 'network-vpn-symbolic',
+      [2]: 'network-workgroup-symbolic',
     };
 
     this.icon.icon_name = this._icons[0];

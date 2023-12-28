@@ -1,7 +1,7 @@
 /**
- *
  * @module libs/utils
  */
+const { Gdk  } = imports.gi;
 
 /**
  * Main menu alignment mode
@@ -26,8 +26,9 @@ var MenuAlignment = Object.freeze({
 var SettingsKey = Object.freeze({
   LoginServer: 'login-server',
   Operator: 'operator',
+  AdvertiseExitNode: 'advertise-exit-node',
+  AdvertiseTags: 'advertise-tags',
   LogLevel: 'log-level',
-  AcceptRoutes: 'accept-routes',
 });
 
 /**
@@ -55,7 +56,7 @@ var ConnectionState = Object.freeze({
 var ExtensionType = Object.freeze({
   SYSTEM: 1,
   PER_USER: 2,
-})
+});
 
 /**
  * Extension State
@@ -72,7 +73,7 @@ var ExtensionState = Object.freeze({
   DISABLING: 7,
   ENABLING: 8,
   UNINSTALLED: 99,
-})
+});
 
 /**
  * Load and execute file of module
@@ -91,6 +92,33 @@ var require = function require(name) {
     logError(error, `Unresolved import. Module ${name} not found`);
     return {};
   }
+}
+
+/**
+ * Build color interface
+ * @param {string} colorName
+ * @return Gdk.RGBA
+ */
+var getColor = function getColor(colorName) {
+  const color = new Gdk.RGBA();
+  color.parse(colorName);
+  return color;
+}
+
+/**
+ * Bool to decimals opacity bind callback;
+ * @param bind
+ * @param source
+ * @returns {[boolean,number]}
+ */
+var opacityBindTo = function opacityBindTo(bind, source) {
+  return [true, source ? 255 : 0];
+}
+
+var ornamentBindTo = function ornamentBindTo(bind, source) {
+  // PopupMenu.Ornament.CHECK = 2
+  // PopupMenu.Ornament.NONE = 0
+  return [true, source ? 2 : 0];
 }
 
 var showObject = function showObject(obj) {

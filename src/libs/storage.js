@@ -1,14 +1,11 @@
 /**
  * @module libs/storage
- *
- * @typedef {module:libs/shell} NetworkState
  */
-
 const { GObject } = imports.gi;
 const Extension = imports.misc.extensionUtils.getCurrentExtension();
 const { require, SettingsKey, ConnectionState } = Extension.imports.libs.utils;
 
-const { getNetworkState } = require('libs/shell');
+const { getNetworkPrefs, getNetworkState } = require('libs/shell');
 
 var NetworkNode = class NetworkNode {
   _tags = [];
@@ -122,7 +119,10 @@ var NetworkNode = class NetworkNode {
  * @property {string} networkName
  * @property {string} domain
  * @property {string} health
+ * @property {boolean} acceptRoutes
+ * @property {boolean} shieldsUp
  * @property {string} exitNode
+ * @exports
  */
 var Storage = class Storage extends GObject.Object {
   static [GObject.properties] = {
@@ -130,6 +130,8 @@ var Storage = class Storage extends GObject.Object {
     networkName: GObject.ParamSpec.string('networkName', 'networkName', 'networkName', GObject.ParamFlags.READWRITE, ''),
     domain: GObject.ParamSpec.string('domain', 'domain', 'domain', GObject.ParamFlags.READWRITE, ''),
     health: GObject.ParamSpec.string('health', 'health', 'health', GObject.ParamFlags.READWRITE, ''),
+    acceptRoutes: GObject.ParamSpec.boolean('acceptRoutes', 'acceptRoutes', '--accept-routes', GObject.ParamFlags.READWRITE, true),
+    shieldsUp: GObject.ParamSpec.boolean('shieldsUp', 'shieldsUp', '--shields-up', GObject.ParamFlags.READWRITE, false),
     exitNode: GObject.ParamSpec.string('exitNode', 'exitNode', 'exitNode', GObject.ParamFlags.READWRITE, ''),
     nodes: GObject.ParamSpec.jsobject('nodes', 'nodes', 'nodes', GObject.ParamFlags.READWRITE),
   }
@@ -159,9 +161,12 @@ var Storage = class Storage extends GObject.Object {
     }
     this._loading = true;
 
-    getNetworkState()
-      .then(networkState => {
-        this.update(networkState, withNodes);
+    Promise.all([
+      getNetworkPrefs(),
+      getNetworkState(),
+    ])
+      .then(([prefs, nodes]) => {
+        this.update(prefs, nodes, withNodes);
         this._loading = false;
       })
       .catch(error => {
@@ -172,41 +177,39 @@ var Storage = class Storage extends GObject.Object {
 
   /**
    * Update state values if changes
+   * @param {NetworkPrefs} prefs
    * @param {NetworkState} networkState
-   * @param {boolean} withNodes
+   * @param withNodes
    */
-  update(networkState, withNodes = false) {
-    switch (networkState.BackendState.trim()) {
-      case 'NeedsLogin':
-        this.set_property('state', ConnectionState.NeedLogin);
-        break;
-      case 'Running':
-        if (networkState.ExitNodeStatus) {
-          this.set_property('state', ConnectionState.Connected);
-        } else {
-          this.set_property('state', ConnectionState.Enabled);
-        }
-        break;
-      default:
-        this.set_property('state', ConnectionState.Disabled);
+  update(prefs, networkState, withNodes = false) {
+    if (prefs.LoggedOut) {
+      this.set_property('state', ConnectionState.NeedLogin);
+    } else if (!prefs.WantRunning) {
+      this.set_property('state', ConnectionState.Disabled);
+    } else if (prefs.WantRunning && !prefs.ExitNodeID) {
+      this.set_property('state', ConnectionState.Enabled);
+    } else {
+      this.set_property('state', ConnectionState.Connected);
     }
+
     if (networkState.CurrentTailnet?.Name !== this.networkName) this.set_property('networkName', networkState?.CurrentTailnet?.Name || '');
     if (networkState.MagicDNSSuffix !== this.domain) this.set_property('domain', networkState.MagicDNSSuffix || '');
+    if (prefs.RouteAll !== this.acceptRoutes) this.set_property('acceptRoutes', prefs.RouteAll);
+    if (prefs.ShieldsUp !== this.shieldsUp) this.set_property('shieldsUp', prefs.ShieldsUp);
 
     const health = networkState.Health?.join(' ') ?? '';
     if (health !== this.health) this.set_property('health', health);
 
-    let newExitNode = networkState.ExitNodeStatus?.ID ?? '';
     let exitNodeUpdated = false;
-    if (newExitNode !== this.exitNode) {
+    if (prefs.ExitNodeID !== this.exitNode) {
       exitNodeUpdated = true;
     }
 
     if (withNodes || !this.nodes?.length || exitNodeUpdated) {
-      this._compareNodes(networkState.Peer, newExitNode);
+      this._compareNodes(networkState.Peer, prefs.ExitNodeID);
 
     } else if (exitNodeUpdated) {
-      this.set_property('exitNode', newExitNode);
+      this.set_property('exitNode', prefs.ExitNodeID);
     }
   }
 

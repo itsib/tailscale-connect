@@ -1,5 +1,5 @@
 /**
- * @module prefs-ui/operator-control
+ * @module prefs-ui/advertise-exit-node-control
  *
  * @typedef {import(@girs/adw-1)} Adw
  *
@@ -15,10 +15,9 @@ const { GObject, Gtk, Adw, Gio } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const _ = ExtensionUtils.gettext;
-const { SettingsKey, require } = Me.imports.libs.utils;
-const { TextField } = require('prefs-ui/text-field')
+const { SettingsKey } = Me.imports.libs.utils;
 
-var OperatorControl = class OperatorControl extends Adw.ActionRow {
+var AdvertiseExitNodeControl = class AdvertiseExitNodeControl extends Adw.ActionRow {
   static { GObject.registerClass(this) }
 
   /**
@@ -27,27 +26,26 @@ var OperatorControl = class OperatorControl extends Adw.ActionRow {
    */
   constructor(logger) {
     super({
-      title: _('Operator'),
-      subtitle: _('Provide a Unix username other than root to operate tailscaled.'),
+      title: _('Advertise Exit Node'),
+      subtitle: _('Offer to be an exit node for internet traffic for the Tailnet.'),
     });
 
     this._logger = logger;
     this._settings = ExtensionUtils.getSettings();
 
-    this._urlField = new TextField();
-    this._urlField.input_purpose = Gtk.InputPurpose.NAME;
-    this._urlField.width_chars = 16;
+    const toggle = new Gtk.Switch();
+    toggle.set_visible(true);
+    toggle.set_focusable(true);
+    toggle.valign = Gtk.Align.CENTER;
+    toggle.halign = Gtk.Align.END;
 
     const box = new Gtk.Box({ spacing: 0 });
-    box.height_request = 20;
-    box.margin_top = 16;
-    box.margin_bottom = 16;
-    box.append(this._urlField);
+    box.append(toggle);
 
     this.add_suffix(box);
-    this.set_activatable_widget(this._urlField);
-    this.set_focus_child(this._urlField);
+    this.set_activatable_widget(toggle);
+    this.set_cursor_from_name('pointer');
 
-    this._settings.bind(SettingsKey.Operator, this._urlField, 'text', Gio.SettingsBindFlags.DEFAULT);
+    this._settings.bind(SettingsKey.AdvertiseExitNode, toggle, 'active', Gio.SettingsBindFlags.DEFAULT);
   }
 }

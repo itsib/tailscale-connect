@@ -1,7 +1,6 @@
 /**
  * @module prefs-ui/log-level-control
  */
-
 const { GObject, Gtk, Adw } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();

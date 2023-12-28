@@ -1,28 +1,29 @@
 /**
  * @module ext-ui/btn-shields-up
  */
-
 const { GObject, Gio } = imports.gi;
 const PopupMenu = imports.ui.popupMenu;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const _ = ExtensionUtils.gettext;
-const { SettingsKey } = Me.imports.libs.utils;
+const { opacityBindTo, require } = Me.imports.libs.utils;
+
+const { setShieldsUp } = require('libs/shell')
 
 /**
  * @typedef {import(@girs/gnome-shell/src/ui/popupMenu.d.ts)} PopupMenu
  * @property {PopupMenu.PopupImageMenuItem} PopupImageMenuItem
- * @property {PopupMenu.PopupBaseMenuItem} PopupBaseMenuItem
+ * @property {PopupMenu.PopupMenuBase} PopupMenuBase
  *
  * @class
  * @extends PopupMenu.PopupImageMenuItem
- * @extends PopupMenu.PopupBaseMenuItem
- * @type {BtnShieldsUp}
+ * @extends PopupMenu.PopupMenuBase
+ * @type {TSBtnAcceptRoutes}
  * @exports
  */
-var BtnShieldsUp = class BtnShieldsUp extends PopupMenu.PopupImageMenuItem {
+var TSBtnShieldsUp = class TSBtnShieldsUp extends PopupMenu.PopupImageMenuItem {
   static [GObject.properties] = {
-    enabled: GObject.ParamSpec.boolean('enabled', 'enabled', 'enabled', GObject.ParamFlags.READWRITE, false),
+    shieldsUp: GObject.ParamSpec.boolean('shieldsUp', 'shieldsUp', 'shieldsUp', GObject.ParamFlags.READWRITE, false),
   }
   static { GObject.registerClass(this) }
 
@@ -31,32 +32,24 @@ var BtnShieldsUp = class BtnShieldsUp extends PopupMenu.PopupImageMenuItem {
    * @param {Storage} storage
    */
   constructor(logger, storage) {
-    const settings = ExtensionUtils.getSettings();
-    const enabled = settings.get_boolean('shields-up');
-    const icon = [
-      '',
-      'emblem-ok-symbolic',
-    ];
-
     super(_('Block Incoming'), 'emblem-ok-symbolic', { style_class: ' ts-menu-item' });
 
     this._logger = logger;
     this._storage = storage;
-    this._settings = settings;
 
-    this._icon.set_opacity(enabled ? 255 : 0)
-    this.connect('notify::enabled', () => {
-      this._icon.set_opacity(this.enabled ? 255 : 0)
-    })
+    this.bind_property_full('shieldsUp', this._icon, 'opacity', GObject.BindingFlags.SYNC_CREATE, opacityBindTo, null);
+    this.bind_property('shieldsUp', storage, 'shieldsUp', GObject.BindingFlags.SYNC_CREATE | GObject.BindingFlags.BIDIRECTIONAL);
 
     this.connect('activate', () => {
-      const enabled = !this.enabled;
-      this.set_property('enabled', enabled);
-      this._settings.set_boolean('shields-up', enabled);
-
-      this._logger.info('Shields-up', enabled);
-    });
-
-    this.set_property('enabled', enabled);
+      this.sensitive = false;
+      setShieldsUp(!storage.shieldsUp)
+        .then(() => {
+          storage.refresh();
+          this.sensitive = true;
+        })
+        .catch(() => {
+          this.sensitive = true;
+        });
+    })
   }
 }

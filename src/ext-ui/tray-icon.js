@@ -1,10 +1,17 @@
 /**
  * @module ext-ui/tray-icon
  */
-
-const { GObject, St, Gio } = imports.gi;
+const { GObject, St, Gio, Clutter } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
+
+const STATUS_COLORS = {
+  [-2]: { bg: '#797878', bd: '#c7162b' }, // Error
+  [-1]: { bg: '#797878', bd: '#232325' }, // Warning
+  [0]:  { bg: '#797878', bd: '#232325' }, // Disabled
+  [1]:  { bg: '#ffffff', bd: '#232325' }, // Enabled
+  [2]:  { bg: '#ffffff', bd: '#0b870f' }, // Connected
+};
 
 /**
  * @exports
@@ -22,45 +29,49 @@ var TrayIconType = {
  * Tray icon ui element
  * @class
  * @extends St.BoxLayout
- * @type {TrayIcon}
+ * @type {TSTrayIcon}
  * @exports
  */
-var TrayIcon = class TrayIcon extends St.BoxLayout {
+var TSTrayIcon = class TSTrayIcon extends St.BoxLayout {
   static { GObject.registerClass(this) }
 
   /**
-   *
+   * @param {Logger} logger
    * @extends St.BoxLayout
    */
-  constructor() {
-    super({ style_class: 'panel-status-indicators-box tc-menu-box' });
+  constructor(logger) {
+    super({ style_class: 'panel-status-indicators-box tailscale-status-indicators-box' });
 
-    this._gicons = {
-      [TrayIconType.Error]: Gio.icon_new_for_string(Me.path + '/icons/tailscale-error.svg'),
-      [TrayIconType.Warning]: Gio.icon_new_for_string(Me.path + '/icons/tailscale-warning.svg'),
-      [TrayIconType.Disabled]: Gio.icon_new_for_string(Me.path + '/icons/tailscale-disable.svg'),
-      [TrayIconType.Enabled]: Gio.icon_new_for_string(Me.path + '/icons/tailscale-enable.svg'),
-      [TrayIconType.Connected]: Gio.icon_new_for_string(Me.path + '/icons/tailscale-connected.svg'),
-    }
+    this._logger = logger;
 
     this._icon = new St.Icon({
-      gicon: this._gicons[TrayIconType.Disabled],
-      style_class: 'system-status-icon'
+      gicon: Gio.icon_new_for_string(Me.path + '/icons/tailscale-tray-icon.svg'),
+      style_class: 'system-status-icon tailscale-status-icon',
+      x_expand: true,
+      y_expand: true,
+      x_align: Clutter.ActorAlign.CENTER,
+      y_align: Clutter.ActorAlign.CENTER,
     });
-
     this.add_child(this._icon);
+    this.setStatus(0);
   }
 
   destroy() {
-    this._gicons = null;
     this._icon = null;
   }
 
   /**
    * Update tray icon by type
-   * @param {TrayIconType} type
+   * @param {number} status
    */
-  setIcon(type) {
-    this._icon.gicon = this._gicons[type];
+  setStatus(status) {
+    if (!(status in STATUS_COLORS)) {
+      this._logger.error(`Unknown status code ${status}`);
+      status = 0;
+    }
+
+    const colors = STATUS_COLORS[status];
+
+    this._icon.set_style(`background-color: ${colors.bg}; border-color: ${colors.bd}`)
   }
 }

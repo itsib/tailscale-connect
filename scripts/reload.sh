@@ -31,4 +31,6 @@ execute "killall -3 gnome-shell" "Restart gnome shell"
 
 sleep 6s
 
+export GTK_DEBUG=interactive
+
 execute "gnome-extensions enable tailscale-connect@itsib.github.com" "Enable extension"
