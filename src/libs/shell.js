@@ -162,14 +162,34 @@ var shell = function shell(commands, flags = Gio.SubprocessFlags.STDOUT_PIPE | G
  * Login in network
  *
  * @param {string} flags.operator --operator=
+ * @param {string} flags.authKey --auth-key=
+ * @param {string} flags.hostname --hostname=
+ * @param {string} flags.loginServer --login-server=
+ * @param {boolean} flags.acceptDns --accept-dns
  * @param {boolean} flags.acceptRoutes --accept-routes
+ * @param {boolean} flags.shieldsUp --shields-up
+ * @param {boolean} flags.snatSubnetRoutes --snat-subnet-routes
+ * @param {boolean} flags.ssh --ssh
+ * @param {boolean} flags.advertiseExitNode --advertise-exit-node
+ * @param {string[]} flags.advertiseRoutes --advertise-routes=
+ * @param {string[]} flags.advertiseTags --advertise-tags=
  * @return {Promise<string | void>}
  */
 var login = function login(flags) {
   const commands = ['pkexec', 'tailscale', 'up', '--reset', '--timeout=3s'];
 
   if (flags.operator) commands.push(`--operator=${flags.operator}`);
-  if (flags.acceptRoutes) commands.push('--accept-routes=true');
+  if (flags.authKey) commands.push(`--auth-key=${flags.authKey}`);
+  if (flags.hostname) commands.push(`--auth-key=${flags.hostname}`);
+  if (flags.loginServer) commands.push(`--login-server=${flags.loginServer}`);
+  if (flags.acceptDns) commands.push('--accept-dns');
+  if (flags.acceptRoutes) commands.push('--accept-routes');
+  if (flags.shieldsUp) commands.push('--shields-up');
+  if (flags.snatSubnetRoutes) commands.push('--snat-subnet-routes');
+  if (flags.ssh) commands.push('--ssh');
+  if (flags.advertiseExitNode) commands.push('--advertise-exit-node');
+  if (flags.advertiseRoutes && flags.advertiseRoutes.length) commands.push(`--advertise-routes=${flags.advertiseRoutes.join(',')}`);
+  if (flags.advertiseTags && flags.advertiseTags.length) commands.push(`--advertise-tags=${flags.advertiseTags.join(',')}`);
 
   return shell(commands, Gio.SubprocessFlags.STDERR_MERGE | Gio.SubprocessFlags.STDOUT_PIPE)
     .then(output => {
@@ -193,7 +213,7 @@ var login = function login(flags) {
  * @return {Promise<void>}
  */
 var logout = function logout() {
-  return this.shell(['tailscale', 'logout'])
+  return shell(['tailscale', 'logout'])
     .catch(error => {
       if (`${error}`.includes('access denied')) {
         const commands = ['pkexec', 'tailscale', 'logout'];

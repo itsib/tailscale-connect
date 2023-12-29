@@ -6,7 +6,7 @@ const { GObject, Gio } = imports.gi;
 const PopupMenu = imports.ui.popupMenu;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const { opacityBindTo, require } = Me.imports.libs.utils;
+const { opacityBindTo, require, ConnectionState } = Me.imports.libs.utils;
 const { setAcceptRoutes } = require('libs/shell');
 
 /**
@@ -51,5 +51,8 @@ var TSBtnAcceptRoutes = class TSBtnAcceptRoutes extends PopupMenu.PopupImageMenu
         });
     })
 
+    this._storage.connect('notify::state', () => {
+      this.sensitive = this._storage.state !== ConnectionState.NeedLogin;
+    });
   }
 }

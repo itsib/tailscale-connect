@@ -3,7 +3,8 @@
  *
  * @typedef {function(value: string): { error: string } | null } ValidatorFunction
  */
-const _ = imports.misc.extensionUtils.gettext;
+const { GObject, Gtk, Gio, GLib } = imports.gi;
+const _ = imports.misc.extensionUtils.gettext; // uri_parse
 
 /**
  * Field required validator
@@ -21,8 +22,19 @@ var validatorRequired = function validateUrl(value) {
  * @type ValidatorFunction
  */
 var validatorUrl = function validateUrl(value) {
-  if (!value || /^https?:\/\/[a-zA-Z0-9-#?&_.!~*'()]/.test(value)) {
-    return null;
+  try {
+    if (value) {
+      if (!/^https?:\/\//.test(value) || !GLib.uri_parse_scheme(value)) {
+        throw new Error('Url Error');
+      }
+    }
+  } catch (e) {
+    return { error: _('Invalid URL value') };
   }
-  return { error: _('Invalid URL value') };
+  return null;
+
+  // if (!value || /^https?:\/\/[a-zA-Z0-9-#?&_.!~*'()]/.test(value)) {
+  //   return null;
+  // }
+  // return { error: _('Invalid URL value') };
 }

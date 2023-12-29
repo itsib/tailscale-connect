@@ -18,7 +18,9 @@ const _ = ExtensionUtils.gettext;
 const { SettingsKey, require } = Me.imports.libs.utils;
 
 const { TextField } = require('prefs-ui/text-field')
-const { validatorRequired, validatorUrl } = require('libs/validators')
+const { validatorRequired, validatorUrl } = require('libs/validators');
+
+const DEFAULT_URL = 'https://controlplane.tailscale.com';
 
 var LoginServerControl = class LoginServerControl extends Adw.ActionRow {
   static { GObject.registerClass(this) }
@@ -38,6 +40,7 @@ var LoginServerControl = class LoginServerControl extends Adw.ActionRow {
     this._settings = settings;
 
     this._urlField = new TextField();
+    this._urlField.secondary_icon_name = '';
     this._urlField.validatorAdd(validatorRequired, validatorUrl);
     this._urlField.input_purpose = Gtk.InputPurpose.URL;
     this._urlField.width_chars = 30;
@@ -54,5 +57,29 @@ var LoginServerControl = class LoginServerControl extends Adw.ActionRow {
     this.set_activatable_widget(this._urlField);
 
     this._settings.bind(SettingsKey.LoginServer, this._urlField, 'text', Gio.SettingsBindFlags.DEFAULT);
+
+    this._urlField.connect('icon-clicked', this.reset.bind(this));
+
+    this._urlField.connect('leave', this._onLeave.bind(this));
+
+    this._urlField.connect('notify::text', this._onInput.bind(this));
+  }
+
+  reset() {
+    this._urlField.text = DEFAULT_URL;
+  }
+
+  _onLeave() {
+    if (!this._urlField.text) {
+      this.reset();
+    }
+  }
+
+  _onInput() {
+    if (this._urlField.text && this._urlField.text !== DEFAULT_URL) {
+      this._urlField.secondary_icon_name = 'edit-clear-symbolic';
+    } else {
+      this._urlField.secondary_icon_name = null;
+    }
   }
 }

@@ -6,7 +6,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 const STATUS_COLORS = {
-  [-2]: { bg: '#797878', bd: '#c7162b' }, // Error
+  [-2]: { bg: '#9f2834', bd: '#9f2834' }, // Error
   [-1]: { bg: '#797878', bd: '#232325' }, // Warning
   [0]:  { bg: '#797878', bd: '#232325' }, // Disabled
   [1]:  { bg: '#ffffff', bd: '#232325' }, // Enabled

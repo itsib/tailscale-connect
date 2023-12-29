@@ -1,7 +1,7 @@
 /**
  * @module prefs-ui/text-field
  */
-const { GObject, Gtk, Gio } = imports.gi;
+const { GObject, Gtk, Gio, GLib } = imports.gi;
 
 /**
  *
@@ -18,6 +18,7 @@ var TextField = class TextField extends Gtk.Box {
     text: GObject.ParamSpec.string('text', 'text', 'text', GObject.ParamFlags.READWRITE, ''),
     error: GObject.ParamSpec.string('error', 'error', 'error', GObject.ParamFlags.READWRITE, ''),
     touched: GObject.ParamSpec.boolean('touched', 'touched', 'touched', GObject.ParamFlags.READWRITE, false),
+    focused: GObject.ParamSpec.boolean('focused', 'focused', 'focused', GObject.ParamFlags.READWRITE, false),
     invalid: GObject.ParamSpec.boolean('invalid', 'invalid', 'invalid', GObject.ParamFlags.READWRITE, false),
     placeholder_text: GObject.ParamSpec.string('placeholder_text', 'placeholder', 'placeholder', GObject.ParamFlags.READWRITE, ''),
     secondary_icon_name: GObject.ParamSpec.string('secondary_icon_name', 'secondary_icon_name', 'secondary_icon_name', GObject.ParamFlags.READWRITE, ''),
@@ -27,7 +28,10 @@ var TextField = class TextField extends Gtk.Box {
 
   static [GObject.signals] = {
     'submit': { param_types: [ GObject.TYPE_STRING ] },
+    'icon-clicked': {},
     'error': { param_types: [ GObject.TYPE_STRING ] },
+    'focus': {},
+    'leave': {},
   }
 
   static { GObject.registerClass(this) }
@@ -61,8 +65,13 @@ var TextField = class TextField extends Gtk.Box {
     this._entry.connect('notify::invalid', ({ invalid, touched }) => (invalid && touched ? this._entry.add_css_class('error') : this._entry.remove_css_class('error')))
     this._entry.connect('notify::has-focus', () => this.touched = true);
 
-    this._entry.connect('activate', this.emitSubmit.bind(this));
-    this._entry.connect('icon-press', this.emitSubmit.bind(this));
+    this._entry.connect('activate', () => this.emit('submit', this._entry.text));
+    this._entry.connect('icon-press', () => this.emit('icon-clicked'));
+    this._entry.connect('notify::focusable', () => this._entry.focusable === false && (this.focused = false));
+    this._entry.connect('notify::has-focus', () => this.focused = !this.focused);
+    this._entry.connect('notify::cursor-position', () => this.focused = true);
+
+    this.connect('notify::focused', this._onFocusChange.bind(this));
   }
 
   /**
@@ -88,13 +97,6 @@ var TextField = class TextField extends Gtk.Box {
     }
 
     this.setValidationError(error);
-  }
-
-  /**
-   * Emit submit signal (by enter or icon click)
-   */
-  emitSubmit() {
-    this.emit('submit', this._entry.text);
   }
 
   /**
@@ -127,6 +129,14 @@ var TextField = class TextField extends Gtk.Box {
       this._entry.remove_css_class('error');
       this._errorMessage.set_text('');
       this._errorMessage.set_visible(false);
+    }
+  }
+
+  _onFocusChange() {
+    if (this.focused) {
+      this.emit('focus');
+    } else {
+      this.emit('leave');
     }
   }
 }

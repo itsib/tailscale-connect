@@ -33,6 +33,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 const { require } = Me.imports.libs.utils;
 
 const { TSTrayMenu } = require('ext-ui/tray-menu');
+const { Notifications } = require('ext-ui/notifications');
 const { Logger, Level } = require('libs/logger');
 const { Storage } = require('libs/storage');
 const { MenuAlignment, SettingsKey } = require('libs/utils');
@@ -92,12 +93,16 @@ class TsConnectExtension {
   enable() {
     this._logger = new Logger(this._domain);
     this._storage = new Storage(this._logger);
+    this._notifications = new Notifications(this._logger);
     this._menu = new TSTrayMenu({ logger: this._logger, storage: this._storage });
     this._settings = ExtensionUtils.getSettings();
-    this._logger.setLevel(this._settings.get_int(SettingsKey.LogLevel));
+
     this._logLevelSub = this._settings.connect(`changed::${SettingsKey.LogLevel}`, this._onLogLevelChange.bind(this));
+    this._onLogLevelChange();
 
     Main.panel.addToStatusArea(this._uuid, this._menu, MenuAlignment.Center, 'right');
+
+    this._storage.connect('notify::health', this._onHealthChange.bind(this))
 
     this._timerId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, this._updIntervalSec, this._refresh.bind(this));
 
@@ -119,6 +124,9 @@ class TsConnectExtension {
     this._menu.destroy();
     this._menu = null;
 
+    this._notifications.clear();
+    this._notifications = null;
+
     this._storage.destroy()
     this._storage = null;
 
@@ -134,13 +142,24 @@ class TsConnectExtension {
     return GLib.SOURCE_CONTINUE;
   }
 
-  _onLogLevelChange(settings) {
-    const logLevel = settings.get_int(SettingsKey.LogLevel);
+  _onLogLevelChange() {
+    const logLevel = this._settings.get_int(SettingsKey.LogLevel);
 
     this._logger.setLevel(Level.Debug);
     this._logger.info(`Log level updated to ${logLevel}`);
 
     this._logger.setLevel(logLevel);
+  }
+
+  _onHealthChange() {
+    if (this._storage.health) {
+      const messages = JSON.parse(this._storage.health);
+      if (Array.isArray(messages)) {
+        messages.forEach(message => this._notifications.push(0, message));
+        return;
+      }
+    }
+    this._notifications.clear();
   }
 }
 

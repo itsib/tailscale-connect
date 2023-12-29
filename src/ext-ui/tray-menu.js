@@ -61,7 +61,6 @@ var TSTrayMenu = class TSTrayMenu extends PanelMenu.Button {
     this.menu.connect('open-state-changed', this._onOpenChange.bind(this));
 
     // Subscribe storage state change
-    this._storage.connect('notify::health', this._onHealthChange.bind(this));
     this._storage.connect('notify::health', this._onChangeState.bind(this));
     this._storage.connect('notify::state', this._onChangeState.bind(this));
 
@@ -100,15 +99,6 @@ var TSTrayMenu = class TSTrayMenu extends PanelMenu.Button {
     } else {
       this._logger.debug('Menu close');
     }
-  }
-
-  _onHealthChange() {
-    const health = this._storage.health.trim();
-    if (!health) {
-      return;
-    }
-
-    this._logger.info(health);
   }
 
   _onChangeState() {

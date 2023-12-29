@@ -83,6 +83,10 @@ var ExtensionState = Object.freeze({
   UNINSTALLED: 99,
 });
 
+/**
+ *
+ * @type {{jsobject: (function(string): GObject.ParamSpecBoxed), number: (function(string, number): GObject.ParamSpecInt), boolean: (function(string, boolean): GObject.ParamSpecBoolean), string: (function(string, string): GObject.ParamSpecString)}}
+ */
 var Spec = {
   /**
    * Create spec value

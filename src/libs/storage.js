@@ -6,6 +6,7 @@ const Extension = imports.misc.extensionUtils.getCurrentExtension();
 const { require, SettingsKey, ConnectionState } = Extension.imports.libs.utils;
 
 const { getNetworkPrefs, getNetworkState } = require('libs/shell');
+const { HeathTranslate } = require('libs/heath-translate');
 
 var NetworkNode = class NetworkNode {
   _tags = [];
@@ -117,6 +118,7 @@ var NetworkNode = class NetworkNode {
  * @extends {import(@girs/gobject-2.0).Binding}
  * @property {ConnectionState} state
  * @property {string} networkName
+ * @property {string} loginPegeUrl
  * @property {string} domain
  * @property {string} health
  * @property {boolean} acceptRoutes
@@ -127,6 +129,7 @@ var NetworkNode = class NetworkNode {
 var Storage = class Storage extends GObject.Object {
   static [GObject.properties] = {
     state: GObject.ParamSpec.int('state', 'state', 'state', GObject.ParamFlags.READWRITE, ConnectionState.NeedLogin, ConnectionState.Connected, 0),
+    loginPegeUrl: GObject.ParamSpec.string('loginPegeUrl', 'loginPegeUrl', 'loginPegeUrl', GObject.ParamFlags.READWRITE, ''),
     networkName: GObject.ParamSpec.string('networkName', 'networkName', 'networkName', GObject.ParamFlags.READWRITE, ''),
     domain: GObject.ParamSpec.string('domain', 'domain', 'domain', GObject.ParamFlags.READWRITE, ''),
     health: GObject.ParamSpec.string('health', 'health', 'health', GObject.ParamFlags.READWRITE, ''),
@@ -182,7 +185,7 @@ var Storage = class Storage extends GObject.Object {
    * @param withNodes
    */
   update(prefs, networkState, withNodes = false) {
-    if (prefs.LoggedOut) {
+    if (prefs.LoggedOut || prefs.Config === null) {
       this.set_property('state', ConnectionState.NeedLogin);
     } else if (!prefs.WantRunning) {
       this.set_property('state', ConnectionState.Disabled);
@@ -194,10 +197,11 @@ var Storage = class Storage extends GObject.Object {
 
     if (networkState.CurrentTailnet?.Name !== this.networkName) this.set_property('networkName', networkState?.CurrentTailnet?.Name || '');
     if (networkState.MagicDNSSuffix !== this.domain) this.set_property('domain', networkState.MagicDNSSuffix || '');
+    if (prefs.ControlURL !== this.loginPegeUrl) this.set_property('loginPegeUrl', prefs.ControlURL);
     if (prefs.RouteAll !== this.acceptRoutes) this.set_property('acceptRoutes', prefs.RouteAll);
     if (prefs.ShieldsUp !== this.shieldsUp) this.set_property('shieldsUp', prefs.ShieldsUp);
 
-    const health = networkState.Health?.join(' ') ?? '';
+    const health = this._parseHealthMessage(networkState.Health);
     if (health !== this.health) this.set_property('health', health);
 
     let exitNodeUpdated = false;
@@ -260,5 +264,29 @@ var Storage = class Storage extends GObject.Object {
       this.notify('nodes');
       this.set_property('exitNode', newExitNode);
     }
+  }
+
+  /**
+   * Parce and translate tailscale heath messages
+   * @param {string[]|null} messages
+   * @returns {null}
+   * @private
+   */
+  _parseHealthMessage(messages) {
+    if(!messages || !messages.length) {
+      return '';
+    }
+    const translated = [];
+    for (let i = 0; i < messages.length; i++) {
+      const src = messages[i];
+      const msg = src ? (src in HeathTranslate ? HeathTranslate[src] : src) : null;
+      if (msg) {
+        translated.push(msg);
+      }
+    }
+    if (!translated.length) {
+      return '';
+    }
+    return JSON.stringify(translated);
   }
 }

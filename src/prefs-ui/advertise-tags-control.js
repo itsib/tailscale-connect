@@ -71,6 +71,7 @@ var AdvertiseTagsControl = class AdvertiseTagsControl extends Adw.ActionRow {
     this._box.append(this._tagFlowBox);
 
     this._tagNameField.connect('submit', this._addTag.bind(this));
+    this._tagNameField.connect('icon-clicked', this._addTag.bind(this));
   }
 
   /**

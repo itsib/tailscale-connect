@@ -1,7 +1,6 @@
 /**
  * @module ext-ui/btn-connect
  */
-
 const { GObject, Gio } = imports.gi;
 const PopupMenu = imports.ui.popupMenu;
 const ExtensionUtils = imports.misc.extensionUtils;
@@ -11,54 +10,6 @@ const { require, SettingsKey } = Me.imports.libs.utils;
 const { networkUp, networkDown, setExitNode, login, logout } = require('libs/shell');
 
 const _ = ExtensionUtils.gettext;
-
-class ConnectExitNodePopupMenuItem extends PopupMenu.PopupMenuItem {
-  static [GObject.properties] = {
-    enabled: GObject.ParamSpec.boolean('enabled', 'enabled', 'This node is used', GObject.ParamFlags.READWRITE, false),
-  }
-  static { GObject.registerClass(this) }
-
-  /**
-   *
-   * @param {Logger} logger
-   * @param {Storage} storage
-   * @param {?NetworkNode} networkNode
-   */
-  constructor(logger, storage, networkNode) {
-    let exitNode = storage.exitNode;
-    let label = networkNode?.name ?? 'none';
-    label = label.charAt(0).toUpperCase() + label.slice(1);
-
-    super(label, { style_class: 'ts-popup-sub-menu-item' });
-
-    this._storage = storage;
-    this._logger = logger;
-
-    const enabled = (!exitNode && !networkNode) || exitNode === networkNode?.id;
-
-    this.connect('notify::enabled', self => {
-      this.setOrnament(self.enabled ? PopupMenu.Ornament.DOT : PopupMenu.Ornament.NONE);
-    });
-    this.set_property('enabled', enabled);
-
-    this.connect('activate', this._onClick.bind(this, storage, networkNode));
-  }
-
-  /**
-   * Menu item click handler switch exit node
-   * @param {Storage} storage
-   * @param {?NetworkNode} networkNode
-   * @private
-   */
-  _onClick(storage, networkNode) {
-    if (this.enabled) {
-      this._logger.info('Already enabled');
-      return;
-    }
-    this._logger.debug('Set exit node to', networkNode?.name ?? 'none');
-    setExitNode(networkNode?.name).then(() => storage.refresh(true));
-  }
-}
 
 /**
  * @typedef {import(@girs/gnome-shell/src/ui/popupMenu.d.ts)} PopupMenu
@@ -121,6 +72,11 @@ var TSBtnConnect = class TSBtnConnect extends PopupMenu.PopupSubMenuMenuItem {
     this._logoutBtn.connect('activate', this.onClickLogout.bind(this));
     this._logoutBtn.hide();
     this.menu.addMenuItem(this._logoutBtn);
+
+    this._loginBtn = new PopupMenu.PopupMenuItem(_('Login'), { style_class: 'ts-popup-sub-menu-item ts-connect-btn' });
+    this._loginBtn.connect('activate', this.onClickLogin.bind(this));
+    this._loginBtn.hide();
+    this.menu.addMenuItem(this._loginBtn);
   }
 
   /**
@@ -139,7 +95,7 @@ var TSBtnConnect = class TSBtnConnect extends PopupMenu.PopupSubMenuMenuItem {
     } else if (storage.state === 0) {
       return this._applyDisconnectState();
     } else {
-      return this._applyConnectState(storage);
+      return this._applyConnectedState(storage);
     }
   }
 
@@ -148,9 +104,9 @@ var TSBtnConnect = class TSBtnConnect extends PopupMenu.PopupSubMenuMenuItem {
    */
   onClickConnectBtn() {
     const state = this._storage.state;
+    const acceptRoutes = this._storage.acceptRoutes;
     const settings = ExtensionUtils.getSettings();
     const operator = settings.get_string(SettingsKey.Operator);
-    const acceptRoutes = settings.get_string(SettingsKey.AcceptRoutes);
 
     switch (state) {
       case -1:
@@ -170,6 +126,25 @@ var TSBtnConnect = class TSBtnConnect extends PopupMenu.PopupSubMenuMenuItem {
   onClickLogout() {
     this._logger.info('Logout');
     logout();
+  }
+
+  /**
+   * Login to tailnet
+   */
+  onClickLogin() {
+    const settings = ExtensionUtils.getSettings();
+
+    const flags = {
+      loginServer: settings.get_string(SettingsKey.LoginServer),
+      operator: settings.get_string(SettingsKey.Operator),
+      advertiseExitNode: settings.get_string(SettingsKey.AdvertiseExitNode),
+      advertiseTags: settings.get_strv(SettingsKey.AdvertiseTags),
+      acceptRoutes: this._storage.acceptRoutes,
+      shieldsUp: this._storage.shieldsUp,
+    }
+
+
+    login(flags);
   }
 
   /**
@@ -216,6 +191,7 @@ var TSBtnConnect = class TSBtnConnect extends PopupMenu.PopupSubMenuMenuItem {
     }
     this._separator.hide();
     this._logoutBtn.hide();
+    this._loginBtn.hide();
   }
 
   /**
@@ -227,6 +203,7 @@ var TSBtnConnect = class TSBtnConnect extends PopupMenu.PopupSubMenuMenuItem {
     this.label.text = _('Offline');
     this._connectSwitchBtn.label.text = _('Connect');
     this._logoutBtn.show();
+    this._loginBtn.hide();
   }
 
   /**
@@ -236,8 +213,9 @@ var TSBtnConnect = class TSBtnConnect extends PopupMenu.PopupSubMenuMenuItem {
   _applyNeedLoginState() {
     this._removeNodesSubmenuItems();
     this.label.text = _('Logged Out');
-    this._connectSwitchBtn.label.text = _('Login');
+    this._connectSwitchBtn.hide();
     this._logoutBtn.hide();
+    this._loginBtn.show();
   }
 
   /**
@@ -245,7 +223,7 @@ var TSBtnConnect = class TSBtnConnect extends PopupMenu.PopupSubMenuMenuItem {
    * @param {Storage} storage
    * @private
    */
-  _applyConnectState(storage) {
+  _applyConnectedState(storage) {
     this._removeNodesSubmenuItems();
     this.label.text = '';
 
@@ -273,5 +251,54 @@ var TSBtnConnect = class TSBtnConnect extends PopupMenu.PopupSubMenuMenuItem {
     }
 
     this._connectSwitchBtn.label.text = _('Disconnect');
+    this._connectSwitchBtn.show();
+  }
+}
+
+class ConnectExitNodePopupMenuItem extends PopupMenu.PopupMenuItem {
+  static [GObject.properties] = {
+    enabled: GObject.ParamSpec.boolean('enabled', 'enabled', 'This node is used', GObject.ParamFlags.READWRITE, false),
+  }
+  static { GObject.registerClass(this) }
+
+  /**
+   *
+   * @param {Logger} logger
+   * @param {Storage} storage
+   * @param {?NetworkNode} networkNode
+   */
+  constructor(logger, storage, networkNode) {
+    let exitNode = storage.exitNode;
+    let label = networkNode?.name ?? 'none';
+    label = label.charAt(0).toUpperCase() + label.slice(1);
+
+    super(label, { style_class: 'ts-popup-sub-menu-item' });
+
+    this._storage = storage;
+    this._logger = logger;
+
+    const enabled = (!exitNode && !networkNode) || exitNode === networkNode?.id;
+
+    this.connect('notify::enabled', self => {
+      this.setOrnament(self.enabled ? PopupMenu.Ornament.DOT : PopupMenu.Ornament.NONE);
+    });
+    this.set_property('enabled', enabled);
+
+    this.connect('activate', this._onClick.bind(this, storage, networkNode));
+  }
+
+  /**
+   * Menu item click handler switch exit node
+   * @param {Storage} storage
+   * @param {?NetworkNode} networkNode
+   * @private
+   */
+  _onClick(storage, networkNode) {
+    if (this.enabled) {
+      this._logger.info('Already enabled');
+      return;
+    }
+    this._logger.debug('Set exit node to', networkNode?.name ?? 'none');
+    setExitNode(networkNode?.name).then(() => storage.refresh(true));
   }
 }
