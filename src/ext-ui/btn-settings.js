@@ -18,6 +18,14 @@ var TSBtnSettings = class TSBtnSettings extends PopupMenu.PopupImageMenuItem {
   constructor() {
     super(_('Settings'), 'preferences-system-symbolic', { style_class: ' ts-menu-item' });
 
-    this.connect('activate', () => ExtensionUtils.openPrefs());
+    this.connect('activate', this._onClick.bind(this));
+  }
+
+  _onClick() {
+    try {
+      ExtensionUtils.openPrefs();
+    } catch (e) {
+      logError(e, 'Open prefs')
+    }
   }
 }

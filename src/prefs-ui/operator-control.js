@@ -23,16 +23,17 @@ var OperatorControl = class OperatorControl extends Adw.ActionRow {
 
   /**
    *
+   * @param {Gio.Settings} settings
    * @param {Logger} logger
    */
-  constructor(logger) {
+  constructor(settings, logger) {
     super({
       title: _('Operator'),
       subtitle: _('Provide a Unix username other than root to operate tailscaled.'),
     });
 
     this._logger = logger;
-    this._settings = ExtensionUtils.getSettings();
+    this._settings = settings;
 
     this._urlField = new TextField();
     this._urlField.input_purpose = Gtk.InputPurpose.NAME;
@@ -46,7 +47,6 @@ var OperatorControl = class OperatorControl extends Adw.ActionRow {
 
     this.add_suffix(box);
     this.set_activatable_widget(this._urlField);
-    this.set_focus_child(this._urlField);
 
     this._settings.bind(SettingsKey.Operator, this._urlField, 'text', Gio.SettingsBindFlags.DEFAULT);
   }

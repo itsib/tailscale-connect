@@ -30,9 +30,10 @@ var AdvertiseTagsControl = class AdvertiseTagsControl extends Adw.ActionRow {
 
   /**
    *
+   * @param {Gio.Settings} settings
    * @param {Logger} logger
    */
-  constructor(logger) {
+  constructor(settings, logger) {
     super({
       css_classes: ['advertise-tags-control'],
       title: _('Advertise Tags'),
@@ -41,7 +42,7 @@ var AdvertiseTagsControl = class AdvertiseTagsControl extends Adw.ActionRow {
     });
 
     this._logger = logger;
-    this._settings = ExtensionUtils.getSettings();
+    this._settings = settings;
 
     // Main Box
     this._box = new Gtk.Box();
@@ -111,6 +112,9 @@ var AdvertiseTagsControl = class AdvertiseTagsControl extends Adw.ActionRow {
   }
 }
 
+/**
+ * Tag Name model
+ */
 class AclTagName extends GObject.Object {
   static [GObject.properties] = {
     tag_name: GObject.ParamSpec.string('tag_name', 'tag_name', 'tag_name', GObject.ParamFlags.READWRITE, ''),
@@ -335,31 +339,37 @@ class AclTag extends Gtk.FlowBoxChild {
    * @param {Gtk.CssProvider} cssProvider
    */
   constructor(tagName, cssProvider) {
-    super({ name: tagName, css_name: 'acl-tag' });
+    super({ name: 'acl-tag', css_name: 'acl-tag' });
     this._cssProvider = cssProvider;
     this.get_style_context().add_provider(this._cssProvider, 0);
 
     // Tag container
-    this._container = new Gtk.Box({ css_name: 'acl-tag-content', orientation: Gtk.Orientation.HORIZONTAL });
+    const containerName = 'acl-tag-container';
+    this._container = new Gtk.Box({ name: containerName, css_name: containerName, orientation: Gtk.Orientation.HORIZONTAL });
     this._container.get_style_context().add_provider(this._cssProvider, 0);
     this._container.valign = Gtk.Align.CENTER;
     this._container.halign = Gtk.Align.END;
     this.set_child(this._container);
 
     // Tag label
-    this._label = new Gtk.Label({ label: tagName, css_name: 'acl-tag-label' });
+    const labelName = 'acl-tag-label';
+    this._label = new Gtk.Label({ name: labelName, label: tagName, css_name: labelName });
     this._label.get_style_context().add_provider(this._cssProvider, 0);
     this._container.append(this._label);
 
     // Button remove tag
-    const gicon = Gio.icon_new_for_string('window-close-symbolic');
-    this._button = new Gtk.Button({ css_name: 'acl-tag-remove' });
-    this._button.set_child(new Gtk.Image({ gicon }));
+    const btnName = 'acl-tag-btn-remove';
+    this._button = new Gtk.Button({
+      name: btnName,
+      css_name: btnName,
+      icon_name: 'window-close-symbolic',
+      accessible_role: Gtk.AccessibleRole.BUTTON,
+    });
     this._button.get_style_context().add_provider(this._cssProvider, 0);
     this._container.append(this._button);
 
     this._button.connect('clicked', () => {
-      this.parent.emit('remove-acl-tag', this.get_name());
+      this.parent.emit('remove-acl-tag', this._label.label);
     });
   }
 }

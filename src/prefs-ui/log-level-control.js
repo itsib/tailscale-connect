@@ -1,7 +1,7 @@
 /**
  * @module prefs-ui/log-level-control
  */
-const { GObject, Gtk, Adw } = imports.gi;
+const { GObject, Gtk, Adw, Gio } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const _ = ExtensionUtils.gettext;
@@ -10,19 +10,18 @@ const { SettingsKey } = Me.imports.libs.utils;
 var LogLevelControl = class LogLevelControl extends Adw.ActionRow {
   static { GObject.registerClass(this) }
 
-  _settings;
-
   /**
    *
+   * @param {Gio.Settings} settings
    * @param {Logger} logger
    */
-  constructor(logger) {
+  constructor(settings, logger) {
     super({
       title: _('Log Level'),
       subtitle: _('Which messages will be displayed in the log.'),
     });
 
-    this._settings = ExtensionUtils.getSettings();
+    this._settings = settings;
     this._logger = logger;
 
     const store = new Gtk.ListStore();
@@ -39,15 +38,7 @@ var LogLevelControl = class LogLevelControl extends Adw.ActionRow {
     comboBox.add_attribute(renderer, "text", 1);
     comboBox.set_id_column(0);
     comboBox.set_entry_text_column(1);
-    comboBox.set_active(this.value);
     comboBox.width_request = 125;
-
-    comboBox.connect('changed', self => {
-      const value = self.get_active();
-      this._logger.debug(`OnChange LogLevel:`, value.toString(), typeof value);
-
-      this.value = value;
-    });
 
     const box = new Gtk.Box({ spacing: 0 });
     box.width_request = 125;
@@ -57,14 +48,8 @@ var LogLevelControl = class LogLevelControl extends Adw.ActionRow {
     box.append(comboBox);
 
     this.add_suffix(box);
-    this.activatable_widget = box;
-  }
+    this.activatable_widget = comboBox;
 
-  get value() {
-    return this._settings.get_int(SettingsKey.LogLevel);
-  }
-
-  set value(value) {
-    this._settings.set_int(SettingsKey.LogLevel, value);
+    this._settings.bind(SettingsKey.LogLevel, comboBox, 'active', Gio.SettingsBindFlags.DEFAULT);
   }
 }

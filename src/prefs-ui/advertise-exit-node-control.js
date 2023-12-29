@@ -21,17 +21,17 @@ var AdvertiseExitNodeControl = class AdvertiseExitNodeControl extends Adw.Action
   static { GObject.registerClass(this) }
 
   /**
-   *
+   * @param {Gio.Settings} settings
    * @param {Logger} logger
    */
-  constructor(logger) {
+  constructor(settings, logger) {
     super({
       title: _('Advertise Exit Node'),
       subtitle: _('Offer to be an exit node for internet traffic for the Tailnet.'),
     });
 
+    this._settings = settings;
     this._logger = logger;
-    this._settings = ExtensionUtils.getSettings();
 
     const toggle = new Gtk.Switch();
     toggle.set_visible(true);

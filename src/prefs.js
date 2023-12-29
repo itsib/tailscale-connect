@@ -23,12 +23,10 @@ class PreferencesWidget extends Adw.PreferencesPage {
     });
 
     // Init and subscribe to change the log level
+    this._destroyed = false;
     this._settings = ExtensionUtils.getSettings();
     this._logger = new Logger(Me.metadata['gettext-domain'] + '-prefs');
-    this._logger.setLevel(this._settings.get_int(SettingsKey.LogLevel));
-    this._settings.connect(`changed::${SettingsKey.LogLevel}`, () => {
-      this._logger.setLevel(this._settings.get_int(SettingsKey.LogLevel));
-    });
+    this._updateLogLevel();
 
     // Init Network Configuration
     const flagsGroup = new Adw.PreferencesGroup({
@@ -36,25 +34,49 @@ class PreferencesWidget extends Adw.PreferencesPage {
       title: _('Network Configuration'),
       description: _(`Sets the parameters for startup and connecting your device to the Tailscale`),
     });
-    flagsGroup.add(new LoginServerControl(this._logger));
-    flagsGroup.add(new OperatorControl(this._logger));
-    flagsGroup.add(new AdvertiseExitNodeControl(this._logger));
-    flagsGroup.add(new AdvertiseTagsControl(this._logger));
+    flagsGroup.add(new LoginServerControl(this._settings, this._logger));
+    flagsGroup.add(new OperatorControl(this._settings, this._logger));
+    flagsGroup.add(new AdvertiseExitNodeControl(this._settings, this._logger));
+    flagsGroup.add(new AdvertiseTagsControl(this._settings, this._logger));
     this.add(flagsGroup);
+
 
     // Init Debugging
     const prefsGroup = new Adw.PreferencesGroup({
       name: Me.metadata.name,
       title: _('Debugging'),
       description: _(`Settings for debugging the extension ${Me.metadata.name}`),
-    })
-    prefsGroup.add(new LogLevelControl(this._logger));
+    });
+    prefsGroup.add(new LogLevelControl(this._settings, this._logger));
     this.add(prefsGroup);
 
     this.set_visible(true);
-    this.width_request
+
+    this.connect('unrealize', this.destroy.bind(this))
+    this.connect('destroy', this.destroy.bind(this));
+
+    this._settings.connect(`changed::${SettingsKey.LogLevel}`, this._updateLogLevel.bind(this));
+
+    this._settings.connect('changed', this._onSettingsChanged.bind(this));
 
     this._logger.debug('Preferences Widget initialized');
+  }
+
+  destroy() {
+    if (this._destroyed) {
+      return;
+    }
+    this._destroyed = true;
+    this._logger.debug('Preferences Widget Destroyed');
+  }
+
+  _onSettingsChanged() {
+
+  }
+
+  _updateLogLevel() {
+    const logLevel = this._settings.get_int(SettingsKey.LogLevel);
+    this._logger.setLevel(logLevel);
   }
 }
 
@@ -68,15 +90,16 @@ function init(meta) {
 }
 
 /**
+ * @typedef {GObject.Object} Window
+ * @extends Adw.PreferencesWindow
+ * @extends Gtk.Window
+ *
  * This function is called when the preferences window is first created to build
  * and return a GTK4 widget.
  *
- * The preferences window will be a `Adw.PreferencesWindow`, and the widget
- * returned by this function will be added to an `Adw.PreferencesPage` or
- * `Adw.PreferencesGroup` if necessary.
+ * @param {Window} window
  *
- * @returns {Gtk.Widget} the preferences widget
  */
-function buildPrefsWidget() {
-  return new PreferencesWidget();
+function fillPreferencesWindow(window) {
+  window.add(new PreferencesWidget());
 }

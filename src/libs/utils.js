@@ -1,7 +1,7 @@
 /**
  * @module libs/utils
  */
-const { Gdk  } = imports.gi;
+const { Gdk, GObject  } = imports.gi;
 
 /**
  * Main menu alignment mode
@@ -20,8 +20,16 @@ var MenuAlignment = Object.freeze({
 
 /**
  * Extension settings properties
+ * @typedef {Object} SettingsKey
  * @readonly
- * @enum {string}
+ * @property {string} LoginServer
+ * @property {string} Operator
+ * @property {string} AdvertiseExitNode
+ * @property {string} AdvertiseTags
+ * @property {string} LogLevel
+ * @export
+ *
+ * @type SettingsKey
  */
 var SettingsKey = Object.freeze({
   LoginServer: 'login-server',
@@ -74,6 +82,36 @@ var ExtensionState = Object.freeze({
   ENABLING: 8,
   UNINSTALLED: 99,
 });
+
+var Spec = {
+  /**
+   * Create spec value
+   * @param {string} key
+   * @param {string} _default
+   * @returns GObject.ParamSpecString
+   */
+  string: (key, _default) => GObject.ParamSpec.string(key, key, key, GObject.ParamFlags.READWRITE, _default),
+  /**
+   * Create spec js object
+   * @param {string} key
+   * @returns {GObject.ParamSpecBoxed}
+   */
+  jsobject: (key) => GObject.ParamSpec.jsobject(key, key, key, GObject.ParamFlags.READWRITE),
+  /**
+   * Create spec value
+   * @param {string} key
+   * @param {number} _default
+   * @returns GObject.ParamSpecInt
+   */
+  number: (key, _default) => GObject.ParamSpec.int(key, key, key, GObject.ParamFlags.READWRITE, -Infinity, +Infinity, _default),
+  /**
+   * Create spec value
+   * @param {string} key
+   * @param {boolean} _default
+   * @returns GObject.ParamSpecBoolean
+   */
+  boolean: (key, _default) => GObject.ParamSpec.boolean(key, key, key, GObject.ParamFlags.READWRITE, _default),
+}
 
 /**
  * Load and execute file of module
