@@ -123,6 +123,7 @@ var NetworkNode = class NetworkNode {
  * @property {string} health
  * @property {boolean} acceptRoutes
  * @property {boolean} shieldsUp
+ * @property {boolean} allowLanAccess
  * @property {string} exitNode
  * @exports
  */
@@ -135,6 +136,7 @@ var Storage = class Storage extends GObject.Object {
     health: GObject.ParamSpec.string('health', 'health', 'health', GObject.ParamFlags.READWRITE, ''),
     acceptRoutes: GObject.ParamSpec.boolean('acceptRoutes', 'acceptRoutes', '--accept-routes', GObject.ParamFlags.READWRITE, true),
     shieldsUp: GObject.ParamSpec.boolean('shieldsUp', 'shieldsUp', '--shields-up', GObject.ParamFlags.READWRITE, false),
+    allowLanAccess: GObject.ParamSpec.boolean('allowLanAccess', 'allowLanAccess', '--exit-node-allow-lan-access', GObject.ParamFlags.READWRITE, false),
     exitNode: GObject.ParamSpec.string('exitNode', 'exitNode', 'exitNode', GObject.ParamFlags.READWRITE, ''),
     nodes: GObject.ParamSpec.jsobject('nodes', 'nodes', 'nodes', GObject.ParamFlags.READWRITE),
   }
@@ -200,6 +202,7 @@ var Storage = class Storage extends GObject.Object {
     if (prefs.ControlURL !== this.loginPegeUrl) this.set_property('loginPegeUrl', prefs.ControlURL);
     if (prefs.RouteAll !== this.acceptRoutes) this.set_property('acceptRoutes', prefs.RouteAll);
     if (prefs.ShieldsUp !== this.shieldsUp) this.set_property('shieldsUp', prefs.ShieldsUp);
+    if (prefs.ExitNodeAllowLANAccess !== this.allowLanAccess) this.set_property('allowLanAccess', prefs.ExitNodeAllowLANAccess);
 
     const health = this._parseHealthMessage(networkState.Health);
     if (health !== this.health) this.set_property('health', health);

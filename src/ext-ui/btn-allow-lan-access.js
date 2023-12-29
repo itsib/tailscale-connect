@@ -1,5 +1,5 @@
 /**
- * @module ext-ui/btn-shields-up
+ * @module ext-ui/btn-allow-lan-access
  */
 const { GObject, Gio } = imports.gi;
 const PopupMenu = imports.ui.popupMenu;
@@ -8,7 +8,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 const _ = ExtensionUtils.gettext;
 const { opacityBindTo, require, ConnectionState } = Me.imports.libs.utils;
 
-const { setShieldsUp } = require('libs/shell')
+const { setAllowLanAccess } = require('libs/shell')
 
 /**
  * @typedef {import(@girs/gnome-shell/src/ui/popupMenu.d.ts)} PopupMenu
@@ -21,9 +21,9 @@ const { setShieldsUp } = require('libs/shell')
  * @type {TSBtnAcceptRoutes}
  * @exports
  */
-var TSBtnShieldsUp = class TSBtnShieldsUp extends PopupMenu.PopupImageMenuItem {
+var TSBtnAllowLanAccess = class TSBtnAllowLanAccess extends PopupMenu.PopupImageMenuItem {
   static [GObject.properties] = {
-    shieldsUp: GObject.ParamSpec.boolean('shieldsUp', 'shieldsUp', 'shieldsUp', GObject.ParamFlags.READWRITE, false),
+    allowLanAccess: GObject.ParamSpec.boolean('allowLanAccess', 'allowLanAccess', 'allowLanAccess', GObject.ParamFlags.READWRITE, false),
   }
   static { GObject.registerClass(this) }
 
@@ -32,17 +32,17 @@ var TSBtnShieldsUp = class TSBtnShieldsUp extends PopupMenu.PopupImageMenuItem {
    * @param {Storage} storage
    */
   constructor(logger, storage) {
-    super(_('Shields Up'), 'emblem-ok-symbolic', { style_class: ' ts-menu-item' });
+    super(_('Allow Direct LAN Access'), 'emblem-ok-symbolic', { style_class: ' ts-menu-item' });
 
     this._logger = logger;
     this._storage = storage;
 
-    this.bind_property_full('shieldsUp', this._icon, 'opacity', GObject.BindingFlags.SYNC_CREATE, opacityBindTo, null);
-    this.bind_property('shieldsUp', storage, 'shieldsUp', GObject.BindingFlags.SYNC_CREATE | GObject.BindingFlags.BIDIRECTIONAL);
+    this.bind_property_full('allowLanAccess', this._icon, 'opacity', GObject.BindingFlags.SYNC_CREATE, opacityBindTo, null);
+    this.bind_property('allowLanAccess', storage, 'allowLanAccess', GObject.BindingFlags.SYNC_CREATE | GObject.BindingFlags.BIDIRECTIONAL);
 
     this.connect('activate', () => {
       this.sensitive = false;
-      setShieldsUp(!storage.shieldsUp)
+      setAllowLanAccess(!storage.allowLanAccess)
         .then(() => {
           storage.refresh();
           this.sensitive = true;

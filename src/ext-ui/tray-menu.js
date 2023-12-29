@@ -17,6 +17,7 @@ const { TSBtnSettings } = require('ext-ui/btn-settings');
 const { TSBtnConnect } = require('ext-ui/btn-connect');
 const { TSBtnAcceptRoutes } = require('ext-ui/btn-accept-routes');
 const { TSBtnShieldsUp } = require('ext-ui/btn-shields-up');
+const { TSBtnAllowLanAccess } = require('ext-ui/btn-allow-lan-access');
 const { TSTrayIcon, TrayIconType } = require('ext-ui/tray-icon');
 const { ConnectionState } = require('libs/utils');
 const _ = ExtensionUtils.gettext;
@@ -73,6 +74,7 @@ var TSTrayMenu = class TSTrayMenu extends PanelMenu.Button {
     this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
     this.menu.addMenuItem(new TSBtnAcceptRoutes(this._logger, this._storage));
     this.menu.addMenuItem(new TSBtnShieldsUp(this._logger, this._storage));
+    this.menu.addMenuItem(new TSBtnAllowLanAccess(this._logger, this._storage));
     this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
     this.menu.addMenuItem(new TSBtnSettings());
   }

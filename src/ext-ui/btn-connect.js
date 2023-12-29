@@ -40,7 +40,7 @@ var TSBtnConnect = class TSBtnConnect extends PopupMenu.PopupSubMenuMenuItem {
 
     this._icons = {
       [-2]: 'network-error-symbolic',
-      [-1]: 'network-wired-no-route-symbolic', // Logged Out
+      [-1]: 'network-error-symbolic', // Logged Out
       [0]: 'network-wired-disconnected-symbolic',
       [1]: 'network-wired-symbolic',
       [2]: 'network-workgroup-symbolic',
@@ -141,6 +141,7 @@ var TSBtnConnect = class TSBtnConnect extends PopupMenu.PopupSubMenuMenuItem {
       advertiseTags: settings.get_strv(SettingsKey.AdvertiseTags),
       acceptRoutes: this._storage.acceptRoutes,
       shieldsUp: this._storage.shieldsUp,
+      allowLanAccess: this._storage.allowLanAccess,
     }
 
 

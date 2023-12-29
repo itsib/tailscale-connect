@@ -168,6 +168,7 @@ var shell = function shell(commands, flags = Gio.SubprocessFlags.STDOUT_PIPE | G
  * @param {boolean} flags.acceptDns --accept-dns
  * @param {boolean} flags.acceptRoutes --accept-routes
  * @param {boolean} flags.shieldsUp --shields-up
+ * @param {boolean} flags.allowLanAccess --exit-node-allow-lan-access
  * @param {boolean} flags.snatSubnetRoutes --snat-subnet-routes
  * @param {boolean} flags.ssh --ssh
  * @param {boolean} flags.advertiseExitNode --advertise-exit-node
@@ -185,6 +186,7 @@ var login = function login(flags) {
   if (flags.acceptDns) commands.push('--accept-dns');
   if (flags.acceptRoutes) commands.push('--accept-routes');
   if (flags.shieldsUp) commands.push('--shields-up');
+  if (flags.allowLanAccess) commands.push('--exit-node-allow-lan-access');
   if (flags.snatSubnetRoutes) commands.push('--snat-subnet-routes');
   if (flags.ssh) commands.push('--ssh');
   if (flags.advertiseExitNode) commands.push('--advertise-exit-node');
@@ -289,6 +291,18 @@ var setAcceptRoutes = function setAcceptRoutes(enabled) {
  */
 var setShieldsUp = function setAcceptRoutes(enabled) {
   return shell(['tailscale', 'set', `--shields-up=${enabled}`])
+    .then(result => {
+      return result;
+    });
+}
+
+/**
+ * Update allow lan access flag
+ * @param {boolean} enabled
+ * @return {Promise<string>}
+ */
+var setAllowLanAccess = function setAllowLanAccess(enabled) {
+  return shell(['tailscale', 'set', `--exit-node-allow-lan-access=${enabled}`])
     .then(result => {
       return result;
     });
