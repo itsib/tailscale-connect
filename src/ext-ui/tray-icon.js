@@ -1,7 +1,7 @@
 /**
  * @module ext-ui/tray-icon
  */
-const { GObject, St, Gio, Clutter } = imports.gi;
+const { GObject, St, Gio, Clutter, cairo, PangoCairo } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
@@ -49,10 +49,22 @@ var TSTrayIcon = class TSTrayIcon extends St.BoxLayout {
       style_class: 'system-status-icon tailscale-status-icon',
       x_expand: true,
       y_expand: true,
+    });
+    this._box = new St.BoxLayout({
+      style_class: 'tailscale-status-icon-bg',
+      height: 16,
+      width: 16,
+      x_expand: false,
+      y_expand: false,
       x_align: Clutter.ActorAlign.CENTER,
       y_align: Clutter.ActorAlign.CENTER,
     });
-    this.add_child(this._icon);
+    this._box.add_child(this._icon)
+
+    this.add_child(this._box);
+
+
+
     this.setStatus(0);
   }
 
@@ -72,6 +84,8 @@ var TSTrayIcon = class TSTrayIcon extends St.BoxLayout {
 
     const colors = STATUS_COLORS[status];
 
-    this._icon.set_style(`background-color: ${colors.bg}; border-color: ${colors.bd}`)
+    this._box.set_style(`border-color: ${colors.bd};`);
+
+    this._icon.set_style(`background-color: ${colors.bg};`)
   }
 }

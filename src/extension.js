@@ -26,7 +26,7 @@
  * @property {ExtensionMetadata} metadata
  *
  */
-const { GLib  } = imports.gi;
+const { GLib, Gio, Soup  } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Main = imports.ui.main;
 const Me = ExtensionUtils.getCurrentExtension();
@@ -37,6 +37,7 @@ const { Notifications } = require('ext-ui/notifications');
 const { Logger, Level } = require('libs/logger');
 const { Storage } = require('libs/storage');
 const { MenuAlignment, SettingsKey } = require('libs/utils');
+const { TailscaleSocketClient } = require('libs/tailscale');
 
 class TsConnectExtension {
   /**
@@ -107,6 +108,9 @@ class TsConnectExtension {
     this._timerId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, this._updIntervalSec, this._refresh.bind(this));
 
     this._logger.info('Extension enabled +++');
+
+    // this._socket = new TailscaleSocketClient();
+    // this._socket.listen();
   }
 
   disable() {
