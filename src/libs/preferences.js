@@ -6,9 +6,14 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const { require } = Me.imports.libs.require;
 const { ConnectionState } = require('libs/utils');
-const { HeathTranslate } = require('libs/heath-translate');
 
 const ReadWriteFlags = GObject.ParamFlags.CONSTRUCT | GObject.ParamFlags.READWRITE;
+
+const IGNORE_HEALTH_MSGS = [
+  'state=Stopped, wantRunning=false',
+  'state=NeedsLogin, wantRunning=false',
+  'not in map poll',
+];
 
 /**
  * Peer model, stores common servers data
@@ -373,21 +378,21 @@ var Preferences = class Preferences extends GObject.Object {
   /**
    * Parce and translate tailscale heath messages
    * @param {string[]|null} messages
-   * @returns {null}
+   * @returns {string}
    * @private
    */
   _parseHealthMessage(messages) {
-    log(messages)
-    if(!messages || !messages.length) {
+    if(!Array.isArray(messages)) {
       return '';
     }
     const translated = [];
     for (let i = 0; i < messages.length; i++) {
-      const src = messages[i];
-      const msg = src ? (src in HeathTranslate ? HeathTranslate[src] : src) : null;
-      if (msg) {
-        translated.push(msg);
+      const srcMessage = messages[i];
+      if (IGNORE_HEALTH_MSGS.includes(srcMessage)) {
+        continue;
       }
+
+      translated.push(srcMessage);
     }
     if (!translated.length) {
       return '';

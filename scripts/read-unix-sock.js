@@ -55,7 +55,6 @@ function read(stream, cancellable = null) {
   return new Promise((resolve, reject) => {
     stream.read_line_async(GLib.PRIORITY_DEFAULT, cancellable, (_stream, res) => {
       try {
-        log(res)
         resolve(_stream.read_line_finish_utf8(res)[0]);
       } catch (e) {
         reject(e);
@@ -71,10 +70,6 @@ function read(stream, cancellable = null) {
   const inputStream = Gio.DataInputStream.new(connection.get_input_stream());
 
   await write(outputStream, 'GET /localapi/v0/prefs HTTP/1.1\\r\\nHost: local-tailscaled.sock\\r\\n');
-
-  // console.log(`Bytes Write: ${bytesWrote}`);
-  //
-  // let line = null;
 
   try {
     let line = null;
