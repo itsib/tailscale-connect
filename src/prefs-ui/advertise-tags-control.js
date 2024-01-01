@@ -19,8 +19,9 @@ const { GObject, Gtk, Adw, Gio,  } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const _ = ExtensionUtils.gettext;
-const { SettingsKey, require } = Me.imports.libs.utils;
+const { require } = Me.imports.libs.require;
 const { TextField } = require('prefs-ui/text-field');
+const { SettingsKey } = require('libs/utils');
 
 var AdvertiseTagsControl = class AdvertiseTagsControl extends Adw.ActionRow {
   static [GObject.properties] = {

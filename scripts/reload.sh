@@ -16,6 +16,10 @@ function execute() {
     fi
 }
 
+VERSION=$(gnome-shell --version)
+
+echo -e "  \x1b[1;33m${VERSION}\x1b[0m"
+
 execute "gnome-extensions disable tailscale-connect@itsib.github.com" "Disable extension" true
 
 execute "gnome-extensions uninstall tailscale-connect@itsib.github.com" "Uninstall extension" true

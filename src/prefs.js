@@ -1,9 +1,10 @@
 const { GObject, Gtk, Adw } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const { require, SettingsKey } = Me.imports.libs.utils;
+const { require } = Me.imports.libs.require;
 
 const { Logger } = require('libs/logger');
+const { SettingsKey } = require('libs/utils');
 const { LoginServerControl } = require('prefs-ui/login-server-control');
 const { OperatorControl } = require('prefs-ui/operator-control');
 const { LogLevelControl } = require('prefs-ui/log-level-control');

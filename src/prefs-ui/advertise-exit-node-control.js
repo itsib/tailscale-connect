@@ -5,9 +5,9 @@
  *
  * @typedef {import(@girs/gio-2.0)} Gio
  *
- * @typedef {import(libs/logger)} Logger
+ * @type {module:libs/utils.SettingsKey} SettingsKey
  *
- * @typedef {imports(node_modules/@girs/gnome-shell/src/misc/extensionUtils.d.ts)} ExtensionUtils
+ * @typedef {imports(@girs/gnome-shell/src/misc/extensionUtils.d.ts)} ExtensionUtils
  * @method ExtensionUtils#getSettings
  * @return Gio.Settings
  */
@@ -15,14 +15,15 @@ const { GObject, Gtk, Adw, Gio } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const _ = ExtensionUtils.gettext;
-const { SettingsKey } = Me.imports.libs.utils;
+const { require } = Me.imports.libs.require;
+const { SettingsKey } = require('libs/utils');
 
 var AdvertiseExitNodeControl = class AdvertiseExitNodeControl extends Adw.ActionRow {
   static { GObject.registerClass(this) }
 
   /**
    * @param {Gio.Settings} settings
-   * @param {Logger} logger
+   * @param {module:libs/logger.Logger} logger
    */
   constructor(settings, logger) {
     super({

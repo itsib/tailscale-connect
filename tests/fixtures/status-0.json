@@ -1,0 +1,251 @@
+{
+  "Version": "1.56.1-tf1ea3161a",
+  "TUN": true,
+  "BackendState": "Running",
+  "AuthURL": "",
+  "TailscaleIPs": [
+    "100.81.245.32",
+    "fd7a:115c:a1e0::de11:f520"
+  ],
+  "Self": {
+    "ID": "nYsTpNwY6321CNTRL",
+    "PublicKey": "nodekey:559ee0b883a19d89899bb265fe997e13a7f08e7c9f652060615b7ca12fe30560",
+    "HostName": "msi",
+    "DNSName": "msi.local-domain.net.",
+    "OS": "linux",
+    "UserID": 8205141071470196,
+    "TailscaleIPs": [
+      "100.81.245.32",
+      "fd7a:115c:a1e0::de11:f520"
+    ],
+    "AllowedIPs": [
+      "100.81.245.32/32",
+      "fd7a:115c:a1e0::de11:f520/128"
+    ],
+    "Addrs": [
+      "31.173.243.229:34026",
+      "[2a03:d000:6583:f769:99b2:fc89:4015:61cd]:41641",
+      "172.17.0.1:41641",
+      "172.21.0.1:41641",
+      "192.168.22.135:41641",
+      "[2a03:d000:6583:f769:64fc:3c76:2b15:7507]:41641"
+    ],
+    "CurAddr": "",
+    "Relay": "waw",
+    "RxBytes": 0,
+    "TxBytes": 0,
+    "Created": "2023-12-10T09:57:21.436518591Z",
+    "LastWrite": "0001-01-01T00:00:00Z",
+    "LastSeen": "0001-01-01T00:00:00Z",
+    "LastHandshake": "0001-01-01T00:00:00Z",
+    "Online": true,
+    "ExitNode": false,
+    "ExitNodeOption": false,
+    "Active": false,
+    "PeerAPIURL": [
+      "http://100.81.245.32:43173",
+      "http://[fd7a:115c:a1e0::de11:f520]:42341"
+    ],
+    "CapMap": {
+      "https": null,
+      "https://tailscale.com/cap/file-sharing": null,
+      "https://tailscale.com/cap/is-admin": null,
+      "https://tailscale.com/cap/ssh": null,
+      "https://tailscale.com/cap/tailnet-lock": null
+    },
+    "InNetworkMap": true,
+    "InMagicSock": false,
+    "InEngine": false,
+    "KeyExpiry": "2024-06-27T05:03:20Z"
+  },
+  "Health": ["Test health message"],
+  "MagicDNSSuffix": "local-domain.net",
+  "CurrentTailnet": {
+    "Name": "email@gmail.com",
+    "MagicDNSSuffix": "local-domain.net",
+    "MagicDNSEnabled": true
+  },
+  "CertDomains": [
+    "msi.local-domain.net"
+  ],
+  "Peer": {
+    "nodekey:431dc1177d017b780c96b27513fc9493e394f25dc05b3567a98f33cce242c563": {
+      "ID": "n35iHGi71611CNTRL",
+      "PublicKey": "nodekey:431dc1177d017b780c96b27513fc9493e394f25dc05b3567a98f33cce242c563",
+      "HostName": "device",
+      "DNSName": "device.local-domain.net.",
+      "OS": "android",
+      "UserID": 8205141071470196,
+      "TailscaleIPs": [
+        "100.124.255.58",
+        "fd7a:115c:a1e0::f27c:ff3a"
+      ],
+      "AllowedIPs": [
+        "100.124.255.58/32",
+        "fd7a:115c:a1e0::f27c:ff3a/128"
+      ],
+      "Tags": [ "tag:home" ],
+      "Addrs": null,
+      "CurAddr": "",
+      "Relay": "waw",
+      "RxBytes": 0,
+      "TxBytes": 0,
+      "Created": "2023-12-04T16:11:03.278632302Z",
+      "LastWrite": "0001-01-01T00:00:00Z",
+      "LastSeen": "2023-12-31T10:20:00.1Z",
+      "LastHandshake": "0001-01-01T00:00:00Z",
+      "Online": false,
+      "ExitNode": false,
+      "ExitNodeOption": false,
+      "Active": false,
+      "PeerAPIURL": null,
+      "InNetworkMap": true,
+      "InMagicSock": true,
+      "InEngine": false,
+      "KeyExpiry": "2024-06-09T09:26:10Z"
+    },
+    "nodekey:a97789edf5ece6eb1752fb20a7ef1b1d6783aa9c6f39d5552d9cbc00350fdb1e": {
+      "ID": "nVquKqjvxV11CNTRL",
+      "PublicKey": "nodekey:a97789edf5ece6eb1752fb20a7ef1b1d6783aa9c6f39d5552d9cbc00350fdb1e",
+      "HostName": "amsterdam",
+      "DNSName": "amsterdam.local-domain.net.",
+      "OS": "linux",
+      "UserID": 8205141071470196,
+      "TailscaleIPs": [
+        "100.79.101.78",
+        "fd7a:115c:a1e0::270f:654e"
+      ],
+      "Tags": [ "tag:exit", "tag:home" ],
+      "AllowedIPs": [
+        "100.79.101.78/32",
+        "fd7a:115c:a1e0::270f:654e/128",
+        "0.0.0.0/0",
+        "::/0"
+      ],
+      "Addrs": null,
+      "CurAddr": "",
+      "Relay": "ams",
+      "RxBytes": 0,
+      "TxBytes": 0,
+      "Created": "2023-12-04T16:49:15.484881544Z",
+      "LastWrite": "0001-01-01T00:00:00Z",
+      "LastSeen": "0001-01-01T00:00:00Z",
+      "LastHandshake": "0001-01-01T00:00:00Z",
+      "Online": true,
+      "ExitNode": false,
+      "ExitNodeOption": true,
+      "Active": false,
+      "InNetworkMap": true,
+      "InMagicSock": true,
+      "InEngine": false,
+      "PeerAPIURL": [
+        "http://100.79.101.78:57498",
+        "http://[fd7a:115c:a1e0::270f:654e]:60762"
+      ],
+      "sshHostKeys": [
+        "ssh-rsaAAAAB3NzaC1yc2EAAAADAQABAAABgQDM3pJPBaZ862fzrfGUyLM91qKFguFM17sXnNgCNAQvC/0J/th+rToXXyJ/uI569HhqFHl4WNWhL71CVxDxERbqH71trnlmMOd4JCqjLKdpX4gJoVTSdMuoQQlOcfNrtJjA+Pb3TaAi6CAIaL32uH6vuJqjuQTh2irOpP8KNhWB7NLciq+AvRm8wNvsHOZZmXuf1WaOqFAFrku8wQFwJBxeffXDqC9NGQP2QiP9mYOJADxurychWnfzOneAODILXwHcd/iLlgazUkEKU471tgUxaYVf2ux03koJejq3OPNTLaFOoQHLbGgZBW8wWLkR9LAjo4WX8rYakD50v8hRtCnSqM1ai4oRAp8Et2t+vadV9bhoUdwQPv4QnUmRtX1VxZ762me/iX5PxOrHmX2Lsnuqd+/hKOFJDP3KHhD/aqVGJxD1VefTwhb2/J85ibi/fV592g5DoX1vuiUvNmVDyG47kzlFjcph148+DP4duwQy6IIHW1GtWQsbVc1a5ZmhTrE=",
+        "ecdsa-sha2-nistp256AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBAhS28eDdquOYzqiRNfdIlt0+TXUc8uTdXHV+2c/wbVZtalA5AQzbZqCJ5NBV9a2iTqaueDZI+sgEH5n+gWP10w=",
+        "ssh-ed25519AAAAC3NzaC1lZDI1NTE5AAAAIMjSiZ32Lf0M5LzYeG9utBUVWAeyeqYXo1n3CgbwCHAB"
+      ]
+    },
+    "nodekey:a251037fdad248770862508d7c1b35ffba1a42444bb63b4af1ee3958e3c17b3d": {
+      "ID": "nQHfhyY3PC21CNTRL",
+      "PublicKey": "nodekey:a251037fdad248770862508d7c1b35ffba1a42444bb63b4af1ee3958e3c17b3d",
+      "HostName": "beget",
+      "DNSName": "beget.local-domain.net.",
+      "OS": "linux",
+      "UserID": 8205141071470196,
+      "TailscaleIPs": [
+        "100.110.85.28",
+        "fd7a:115c:a1e0::1fae:551c"
+      ],
+      "AllowedIPs": [
+        "100.110.85.28/32",
+        "fd7a:115c:a1e0::1fae:551c/128",
+        "0.0.0.0/0",
+        "::/0"
+      ],
+      "Tags": [ "tag:exit" ],
+      "Addrs": null,
+      "CurAddr": "",
+      "Relay": "waw",
+      "RxBytes": 0,
+      "TxBytes": 0,
+      "Created": "2023-12-04T15:40:12.329393027Z",
+      "LastWrite": "0001-01-01T00:00:00Z",
+      "LastSeen": "0001-01-01T00:00:00Z",
+      "LastHandshake": "0001-01-01T00:00:00Z",
+      "PeerAPIURL": [
+        "http://100.110.85.28:51814",
+        "http://[fd7a:115c:a1e0::1fae:551c]:56358"
+      ],
+      "sshHostKeys": [
+        "ssh-rsaAAAAB3NzaC1yc2EAAAADAQABAAABgQCu8ft1tzIPk6BAru24R9OEHNg//mg6L/gt2dNsJXyhqA98oGYC1+lasrvG3RGvgDTyjakI2Fwz0nB246XXHReb6nGfIq+kXGOCLRkmB56RmUSUDM9iFhAWfsOSEPgAq4VhKS5Z6LhSz07JQE4aU6KF6QD2Gd6bpHBqr44ZzHzTmSJdB+4AOZmy9FNtTw8tsQr3nH1NFeG9QTp2A91lE7ccXIMf8WvVzlAWBOi7vAH3YSKTU5zsH+72UNyO+K0mNKfseEdzK3NVnJGP7GlXsOzIkNrZtgwnuZqSUWHbjVz/3M9swB6HGywuPPGvXhxj7DtinViW9U3T98VilplMB6BFYY5DHlL33o50qq8fEs1uhIRwSwaX53WPz4T95sko/QczUsfkm318K/+2+/+FnGg4ALBHQ92SqlLGGM4RFQ2Hspuipj672uP/4vsmjNvx+eA8+mlWCjINHNo0o/+aQ4GXK0Jh/x/9UAVgQGytW7he0WiS9k1uhmrCdodcgtmgWM0=",
+        "ecdsa-sha2-nistp256AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBMrxUnQJOWru7+rDNTdWEPblg//Mhglr25Ra8NHsiOgom8AELis3H/oxeC1KtdIXiwvFb48Ah9tF3s+ag+p6G9A=",
+        "ssh-ed25519AAAAC3NzaC1lZDI1NTE5AAAAIN7EHQv9mR6/oInTLWVkyE8gR71HNWzH/lP/w7j3LuE9"
+      ],
+      "Online": true,
+      "ExitNode": false,
+      "ExitNodeOption": true,
+      "Active": false,
+      "InNetworkMap": true,
+      "InMagicSock": true,
+      "InEngine": false
+    },
+    "nodekey:dc8d9d6481019fe9d97280102c07729709e62cbf1cba189dc53cc0fa70ec5662": {
+      "ID": "nkpeDDEGb911CNTRL",
+      "PublicKey": "nodekey:dc8d9d6481019fe9d97280102c07729709e62cbf1cba189dc53cc0fa70ec5662",
+      "HostName": "my-home.local",
+      "DNSName": "my-home.local-domain.netlocal-domain.net.",
+      "OS": "linux",
+      "UserID": 8205141071470196,
+      "TailscaleIPs": [
+        "100.108.86.99",
+        "fd7a:115c:a1e0::70ec:5663"
+      ],
+      "AllowedIPs": [
+        "100.108.86.99/32",
+        "fd7a:115c:a1e0::70ec:5663/128",
+        "192.168.0.0/24",
+        "0.0.0.0/0",
+        "::/0"
+      ],
+      "Tags": [ "tag:client", "tag:exit", "tag:home" ],
+      "PrimaryRoutes": [
+        "192.168.0.0/24"
+      ],
+      "Addrs": null,
+      "CurAddr": "",
+      "Relay": "fra",
+      "RxBytes": 2460224,
+      "TxBytes": 184496,
+      "Created": "2023-12-12T06:04:21.2615196Z",
+      "LastWrite": "2023-12-31T15:11:21.681301508+07:00",
+      "LastSeen": "0001-01-01T00:00:00Z",
+      "LastHandshake": "2023-12-31T15:10:59.522680046+07:00",
+      "Online": true,
+      "ExitNode": false,
+      "ExitNodeOption": true,
+      "Active": false,
+      "PeerAPIURL": [
+        "http://100.108.86.99:41318",
+        "http://[fd7a:115c:a1e0::70ec:5663]:47846"
+      ],
+      "InNetworkMap": true,
+      "InMagicSock": true,
+      "InEngine": true
+    }
+  },
+  "User": {
+    "8205141071470196": {
+      "ID": 8205141071470196,
+      "LoginName": "itsib.su@gmail.com",
+      "DisplayName": "СергейКрайнов",
+      "ProfilePicURL": "https://lh3.googleusercontent.com/a/ACg8ocKDs1dRXBrb6w5jCuO_ofy5cY3_6EkpK8TCx72PcQoIiWVf=s96-c",
+      "Roles": []
+    }
+  },
+  "ClientVersion": {
+    "RunningLatest": true
+  }
+}

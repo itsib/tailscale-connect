@@ -65,7 +65,7 @@
  * @property {string[]} TailscaleIPs
  * @property {SelfPeer} Self
  * @property {?PeerBase} ExitNodeStatus
- * @property {null} Health
+ * @property {string[]|null} Health
  * @property {string} MagicDNSSuffix
  * @property {string[]} CertDomains
  * @property {Record<string, Peer>} Peer
@@ -273,42 +273,6 @@ var setExitNode = function setExitNode(nodeName) {
 }
 
 /**
- * Update accept routes flag
- * @param enabled
- * @return {Promise<string>}
- */
-var setAcceptRoutes = function setAcceptRoutes(enabled) {
-  return shell(['tailscale', 'set', `--accept-routes=${enabled}`])
-    .then(result => {
-      return result;
-    });
-}
-
-/**
- * Update accept routes flag
- * @param enabled
- * @return {Promise<string>}
- */
-var setShieldsUp = function setAcceptRoutes(enabled) {
-  return shell(['tailscale', 'set', `--shields-up=${enabled}`])
-    .then(result => {
-      return result;
-    });
-}
-
-/**
- * Update allow lan access flag
- * @param {boolean} enabled
- * @return {Promise<string>}
- */
-var setAllowLanAccess = function setAllowLanAccess(enabled) {
-  return shell(['tailscale', 'set', `--exit-node-allow-lan-access=${enabled}`])
-    .then(result => {
-      return result;
-    });
-}
-
-/**
  * Try to get tailscale status
  *
  * @return {Promise<NetworkState>}
@@ -317,16 +281,3 @@ var getNetworkState = function getNetworkState()  {
   return shell(['tailscale', 'status', '--json'])
     .then(result => JSON.parse(result))
 }
-
-/**
- * Fetch tailscale settings
- * @returns {Promise<NetworkPrefs>}
- */
-var getNetworkPrefs = function getNetworkPrefs() {
-  const script = `echo -e "GET /localapi/v0/prefs HTTP/1.1\\r\\nHost: local-tailscaled.sock\\r\\n" | nc -U -N /var/run/tailscale/tailscaled.sock`;
-
-  return shell(['/bin/bash', '-c', script])
-    .then(response => JSON.parse(response.split(/\r\n/).reverse()[0]))
-}
-
-

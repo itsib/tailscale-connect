@@ -26,18 +26,18 @@
  * @property {ExtensionMetadata} metadata
  *
  */
-const { GLib, Gio, Soup  } = imports.gi;
+const { Gio  } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Main = imports.ui.main;
 const Me = ExtensionUtils.getCurrentExtension();
-const { require } = Me.imports.libs.utils;
+const { require } = Me.imports.libs.require;
 
 const { TSTrayMenu } = require('ext-ui/tray-menu');
 const { Notifications } = require('ext-ui/notifications');
 const { Logger, Level } = require('libs/logger');
-const { Storage } = require('libs/storage');
-const { MenuAlignment, SettingsKey } = require('libs/utils');
-const { TailscaleSocketClient } = require('libs/tailscale');
+const { Preferences } = require('libs/preferences');
+const { SettingsKey } = require('libs/utils');
+const { DataProviderShell } = require('libs/data-provider-shell');
 
 class TsConnectExtension {
   /**
@@ -47,11 +47,11 @@ class TsConnectExtension {
    */
   _logger = null;
   /**
-   * App storage
-   * @type {Storage | null}
+   * Tailscale preferences
+   * @type {Preferences | null}
    * @private
    */
-  _storage = null;
+  _preferences = null;
   /**
    *
    * @type {null}
@@ -70,17 +70,6 @@ class TsConnectExtension {
    * @private
    */
   _menu = null;
-  /**
-   * Refresh timer
-   * @private {number|null}
-   */
-  _timerId = null;
-  /**
-   * Refresh interval for network state
-   * @type {number}
-   * @private
-   */
-  _updIntervalSec = 10;
 
   /**
    *
@@ -93,32 +82,25 @@ class TsConnectExtension {
 
   enable() {
     this._logger = new Logger(this._domain);
-    this._storage = new Storage(this._logger);
+
+    const dataProvider = new DataProviderShell();
+    this._preferences = new Preferences(dataProvider);
+
     this._notifications = new Notifications(this._logger);
-    this._menu = new TSTrayMenu({ logger: this._logger, storage: this._storage });
+    this._menu = new TSTrayMenu({ logger: this._logger, preferences: this._preferences });
     this._settings = ExtensionUtils.getSettings();
 
     this._logLevelSub = this._settings.connect(`changed::${SettingsKey.LogLevel}`, this._onLogLevelChange.bind(this));
     this._onLogLevelChange();
 
-    Main.panel.addToStatusArea(this._uuid, this._menu, MenuAlignment.Center, 'right');
+    Main.panel.addToStatusArea(this._uuid, this._menu, 0.5, 'right');
 
-    this._storage.connect('notify::health', this._onHealthChange.bind(this))
-
-    this._timerId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, this._updIntervalSec, this._refresh.bind(this));
+    this._preferences.connect('notify::health', this._onHealthChange.bind(this));
 
     this._logger.info('Extension enabled +++');
-
-    // this._socket = new TailscaleSocketClient();
-    // this._socket.listen();
   }
 
   disable() {
-    if (this._timerId !== null) {
-      GLib.Source.remove(this._timerId);
-      this._timerId = null;
-    }
-
     if (this._logLevelSub !== null && this._settings) {
       this._settings.disconnect(this._logLevelSub)
       this._logLevelSub = null;
@@ -131,19 +113,11 @@ class TsConnectExtension {
     this._notifications.clear();
     this._notifications = null;
 
-    this._storage.destroy()
-    this._storage = null;
+    this._preferences.destroy()
+    this._preferences = null;
 
     this._logger.info('Extension disabled ---');
     this._logger = null;
-  }
-
-  _refresh() {
-    this._logger.debug('Refresh storage state by interval');
-
-    this._storage.refresh();
-
-    return GLib.SOURCE_CONTINUE;
   }
 
   _onLogLevelChange() {
@@ -156,8 +130,8 @@ class TsConnectExtension {
   }
 
   _onHealthChange() {
-    if (this._storage.health) {
-      const messages = JSON.parse(this._storage.health);
+    if (this._preferences.health) {
+      const messages = JSON.parse(this._preferences.health);
       if (Array.isArray(messages)) {
         messages.forEach(message => this._notifications.push(0, message));
         return;

@@ -1,0 +1,31 @@
+{
+  "ControlURL": "https://test.node.com",
+  "RouteAll": false,
+  "AllowSingleHosts": true,
+  "ExitNodeID": "nQHfhyY3PC21CNTRL",
+  "ExitNodeIP": "",
+  "ExitNodeAllowLANAccess": true,
+  "CorpDNS": true,
+  "RunSSH": false,
+  "RunWebClient": false,
+  "WantRunning": true,
+  "LoggedOut": false,
+  "ShieldsUp": true,
+  "AdvertiseTags": null,
+  "Hostname": "",
+  "NotepadURLs": false,
+  "AdvertiseRoutes": null,
+  "NoSNAT": false,
+  "NetfilterMode": 2,
+  "OperatorUser": "sergey",
+  "AutoUpdate": {
+    "Check": true,
+    "Apply": false
+  },
+  "AppConnector": {
+    "Advertise": false
+  },
+  "PostureChecking": false,
+  "NetfilterKind": "",
+  "Config": {}
+}

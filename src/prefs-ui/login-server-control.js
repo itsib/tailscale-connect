@@ -11,14 +11,14 @@
  * @method ExtensionUtils#getSettings
  * @return Gio.Settings
  */
-const { GObject, Gtk, Adw, Gio } = imports.gi;
+const { GObject, Gtk, Adw, Gio, GLib } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const _ = ExtensionUtils.gettext;
-const { SettingsKey, require } = Me.imports.libs.utils;
+const { require } = Me.imports.libs.require;
 
-const { TextField } = require('prefs-ui/text-field')
-const { validatorRequired, validatorUrl } = require('libs/validators');
+const { SettingsKey } = require('libs/utils');
+const { TextField } = require('prefs-ui/text-field');
 
 const DEFAULT_URL = 'https://controlplane.tailscale.com';
 
@@ -41,7 +41,7 @@ var LoginServerControl = class LoginServerControl extends Adw.ActionRow {
 
     this._urlField = new TextField();
     this._urlField.secondary_icon_name = '';
-    this._urlField.validatorAdd(validatorRequired, validatorUrl);
+    this._urlField.validatorAdd(this._validator.bind(this));
     this._urlField.input_purpose = Gtk.InputPurpose.URL;
     this._urlField.width_chars = 30;
 
@@ -67,6 +67,16 @@ var LoginServerControl = class LoginServerControl extends Adw.ActionRow {
 
   reset() {
     this._urlField.text = DEFAULT_URL;
+  }
+
+  _validator(value) {
+    if (!value) {
+      return { error: _('Field is required') };
+    }
+    if (!value.startsWith('http') || !GLib.uri_parse_scheme(value)) {
+      return { error: _('Invalid URL value') };
+    }
+    return null;
   }
 
   _onLeave() {

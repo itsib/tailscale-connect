@@ -1,0 +1,10 @@
+{
+  "include_paths": [
+    "./src",
+    "./tests/mocks"
+  ],
+  "spec_files": [
+    "./tests"
+  ],
+  "options": "--verbose"
+}
