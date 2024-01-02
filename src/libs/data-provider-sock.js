@@ -2,22 +2,27 @@
  * @module libs/data-provider-sock
  */
 const { GObject, Gio, GLib } = imports.gi;
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { require } = Me.imports.libs.require;
+const { extractPrefs, extractJson, extractNetwork, extractHealth, extractNodes } = require('libs/utils');
 
 Gio._promisify(Gio.Subprocess.prototype, 'communicate_utf8_async');
 
 var DataProviderSock = class DataProviderSock extends GObject.Object {
   static [GObject.properties] = {
-    status: GObject.ParamSpec.string('status', 'status', 'status', GObject.ParamFlags.READWRITE, ''),
-    prefs: GObject.ParamSpec.string('prefs', 'prefs', 'prefs', GObject.ParamFlags.READWRITE, ''),
+    network: GObject.ParamSpec.string('network', 'network', 'network', GObject.ParamFlags.READWRITE, '[]'),
+    health: GObject.ParamSpec.string('health', 'health', 'health', GObject.ParamFlags.READWRITE, '[]'),
+    prefs: GObject.ParamSpec.string('prefs', 'prefs', 'prefs', GObject.ParamFlags.READWRITE, '[]'),
+    nodes: GObject.ParamSpec.string('nodes', 'nodes', 'nodes', GObject.ParamFlags.READWRITE, '[]'),
   }
 
   static { GObject.registerClass(this) }
-
+  /**
+   * Local sock address
+   * @type {string}
+   * @private
+   */
   _sock = '/var/run/tailscale/tailscaled.sock';
-
-  _encoder = new TextEncoder();
-
-  _decoder = new TextDecoder();
   /**
    * Command for watch tailscale status
    * @type {string[]}
@@ -55,87 +60,11 @@ var DataProviderSock = class DataProviderSock extends GObject.Object {
   }
 
   refresh() {
-    Promise.all([
-      this._execute('status').then(this._extractJson),
-      this._execute('prefs').then(this._extractJson),
-    ])
-      .then(([status, prefs]) => {
-        if (status !== this.status) {
-          this.set_property('status', status);
-        }
-        if (prefs !== this.prefs) {
-          this.set_property('prefs', prefs);
-        }
-      })
-      .catch(logError);
+    Promise.all([this._refreshPrefs(), this._refreshStatus()]).catch(logError);
   }
 
   destroy() {
     this.interrupt();
-  }
-
-  _extractJson(rawResponse) {
-    return rawResponse
-      .replace(/\s+/g, ' ')
-      .replace(/^[a-zA-Z0-9-;,_:./'\s]+{/, '{')
-      .replace(/}[a-zA-Z0-9\s]+?$/, '}');
-  }
-
-  _onPrefsUpdateByLoop(prefsRaw) {
-    const prefs = JSON.stringify(prefsRaw);
-    if (prefs !== this.prefs) {
-      this.prefs = prefs;
-    }
-  }
-
-  _onNetMapUpdateByLoop(netmapRaw) {
-
-    for (let i = 0; i < netmapRaw.Peers.length; i++) {
-      const peerRawV2 = netmapRaw.Peers[i];
-    }
-
-    const Peer = {
-      "nodekey:01ae403ec6d29869c1c0b57b2bd8a69d7ff2b9299409703c4d4b89e8de61ef13": {
-        "ID": "nqSwpNgvzN11CNTRL",
-        "PublicKey": "nodekey:01ae403ec6d29869c1c0b57b2bd8a69d7ff2b9299409703c4d4b89e8de61ef13",
-        "HostName": "my-home.local",
-        "DNSName": "my-home.faun-boga.ts.net.",
-        "OS": "linux",
-        "UserID": 8137555580851953,
-        "TailscaleIPs": [
-        "100.97.239.20",
-        "fd7a:115c:a1e0::de61:ef14"
-      ],
-        "Tags": [
-        "tag:client",
-        "tag:exit",
-        "tag:home"
-      ],
-        "PrimaryRoutes": [
-        "192.168.0.0/24"
-      ],
-        "Addrs": null,
-        "CurAddr": "95.188.71.189:49716",
-        "Relay": "ams",
-        "RxBytes": 1423992,
-        "TxBytes": 660188,
-        "Created": "2023-12-06T08:43:15.979805982Z",
-        "LastWrite": "2023-12-10T13:48:06.214572764+07:00",
-        "LastSeen": "0001-01-01T00:00:00Z",
-        "LastHandshake": "2023-12-10T16:43:32.425675003+07:00",
-        "Online": true,
-        "ExitNode": false,
-        "ExitNodeOption": false,
-        "Active": true,
-        "PeerAPIURL": [
-        "http://100.97.239.20:50011",
-        "http://[fd7a:115c:a1e0::de61:ef14]:50011"
-      ],
-        "InNetworkMap": true,
-        "InMagicSock": true,
-        "InEngine": true
-      },
-    };
   }
 
   async _loop() {
@@ -154,13 +83,9 @@ var DataProviderSock = class DataProviderSock extends GObject.Object {
         if (!object) continue;
 
         if (object.Prefs) {
-          this._onPrefsUpdateByLoop(object.Prefs);
+          this.prefs = extractPrefs(object.Prefs);
         }
-        if (object.NetMap) {
-          this._onNetMapUpdateByLoop(object.NetMap);
-        }
-        console.log(JSON.stringify(object, null, '  '));
-        console.log('-------------------------------------------');
+        this._refreshStatus();
       } catch (e) {
         logError('Loop error' + e);
       }
@@ -235,6 +160,36 @@ var DataProviderSock = class DataProviderSock extends GObject.Object {
     } finally {
       if (cancelId > 0)
         cancellable.disconnect(cancelId);
+    }
+  }
+
+  /**
+   * Refresh prefs property
+   * @return {Promise<void>}
+   * @private
+   */
+  async _refreshPrefs() {
+    try {
+      const prefsRaw = await this._execute('prefs').then(extractJson);
+      this.prefs = extractPrefs(prefsRaw);
+    } catch (error) {
+      logError(error);
+    }
+  }
+
+  /**
+   * Refresh network, health and nodes properties
+   * @return {Promise<void>}
+   * @private
+   */
+  async _refreshStatus() {
+    try {
+      const statusRaw = await this._execute('status').then(extractJson);
+      this.network = extractNetwork(statusRaw)
+      this.health = extractHealth(statusRaw)
+      this.nodes = extractNodes(statusRaw);
+    } catch (error) {
+      logError(error);
     }
   }
 }

@@ -68,8 +68,6 @@ var DataProviderShell = class DataProviderShell extends GObject.Object {
       this._execute('prefs').then(extractJson),
     ])
       .then(([statusRaw, prefsRaw]) => {
-
-
         this.network = extractNetwork(statusRaw)
         this.health = extractHealth(statusRaw)
         this.prefs = extractPrefs(prefsRaw);

@@ -36,8 +36,8 @@ const { TSTrayMenu } = require('ext-ui/tray-menu');
 const { Notifications } = require('ext-ui/notifications');
 const { Logger, Level } = require('libs/logger');
 const { Preferences } = require('libs/preferences');
-const { DataProviderShell: DataProvider } = require('libs/data-provider-shell');
-// const { DataProviderSock: DataProvider } = require('libs/data-provider-sock');
+// const { DataProviderShell: DataProvider } = require('libs/data-provider-shell');
+const { DataProviderSock: DataProvider } = require('libs/data-provider-sock');
 
 class TsConnectExtension {
   /**
