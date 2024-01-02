@@ -5,7 +5,6 @@ const { GObject, Gtk, Adw, Gio } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const _ = ExtensionUtils.gettext;
-const { SettingsKey } = Me.imports.libs.utils;
 
 var LogLevelControl = class LogLevelControl extends Adw.ActionRow {
   static { GObject.registerClass(this) }
@@ -50,6 +49,6 @@ var LogLevelControl = class LogLevelControl extends Adw.ActionRow {
     this.add_suffix(box);
     this.activatable_widget = comboBox;
 
-    this._settings.bind(SettingsKey.LogLevel, comboBox, 'active', Gio.SettingsBindFlags.DEFAULT);
+    this._settings.bind('log-level', comboBox, 'active', Gio.SettingsBindFlags.DEFAULT);
   }
 }

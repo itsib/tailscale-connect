@@ -7,8 +7,10 @@ const PopupMenu = imports.ui.popupMenu;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const { require } = Me.imports.libs.require;
-const { ConnectionState, opacityBindTo } = require('libs/utils');
+const { opacityBindTo } = require('libs/utils');
 const { shell } = require('libs/shell');
+
+const TWO_WAY_BIND_FLAGS = GObject.BindingFlags.SYNC_CREATE|GObject.BindingFlags.BIDIRECTIONAL;
 
 /**
  * @typedef {import(@girs/gnome-shell/src/ui/popupMenu.d.ts)} PopupMenu
@@ -42,7 +44,8 @@ var TSBtnSwitchCommon = class TSBtnSwitchCommon extends PopupMenu.PopupImageMenu
     this._preferences = preferences;
 
     this.bind_property_full('isEnabled', this._icon, 'opacity', GObject.BindingFlags.SYNC_CREATE, opacityBindTo, null);
-    this.bind_property('isEnabled', this._preferences, config.property, GObject.BindingFlags.SYNC_CREATE | GObject.BindingFlags.BIDIRECTIONAL);
+    this.bind_property('isEnabled', this._preferences, config.property, TWO_WAY_BIND_FLAGS);
+    this.bind_property('sensitive', this._preferences, 'loggedIn', TWO_WAY_BIND_FLAGS);
 
     this.connect('activate', () => {
       this.sensitive = false;
@@ -62,10 +65,8 @@ var TSBtnSwitchCommon = class TSBtnSwitchCommon extends PopupMenu.PopupImageMenu
         .catch(() => {
           this.sensitive = true;
         });
-    })
-
-    this._preferences.connect('notify::state', () => {
-      this.sensitive = this._preferences.state !== ConnectionState.NeedLogin;
     });
+
+
   }
 }

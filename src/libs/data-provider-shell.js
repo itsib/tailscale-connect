@@ -2,14 +2,29 @@
  * @module libs/data-provider-shell
  */
 const { GObject, Gio, GLib } = imports.gi;
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { require } = Me.imports.libs.require;
+const { extractPrefs, extractJson, extractNetwork, extractHealth, extractNodes } = require('libs/utils');
 
 Gio._promisify(Gio.Subprocess.prototype, 'communicate_utf8_async');
 
+/**
+ * @class
+ * @typedef {Object} DataProviderShell
+ * @property {string} network - Network info [networkName, domain]
+ * @property {string} health - Health messages [string, string, ...]
+ * @property {string} prefs - Stringify data struct [enabled, loggedIn, loginPageUrl, acceptRoutes, shieldsUp, webClient, exitNode, allowLanAccess];
+ * @property {string} nodes - Network nodes [[id, domain, name, os, [tags], ipV4, ipV6, active, online, exitActive, exitSupport], ...]
+ * @type {DataProviderShell}
+ */
 var DataProviderShell = class DataProviderShell extends GObject.Object {
   static [GObject.properties] = {
-    status: GObject.ParamSpec.string('status', 'status', 'status', GObject.ParamFlags.READWRITE, ''),
-    prefs: GObject.ParamSpec.string('prefs', 'prefs', 'prefs', GObject.ParamFlags.READWRITE, ''),
+    network: GObject.ParamSpec.string('network', 'network', 'network', GObject.ParamFlags.READWRITE, '[]'),
+    health: GObject.ParamSpec.string('health', 'health', 'health', GObject.ParamFlags.READWRITE, '[]'),
+    prefs: GObject.ParamSpec.string('prefs', 'prefs', 'prefs', GObject.ParamFlags.READWRITE, '[]'),
+    nodes: GObject.ParamSpec.string('nodes', 'nodes', 'nodes', GObject.ParamFlags.READWRITE, '[]'),
   }
+
   static { GObject.registerClass(this) }
   /**
    * Local UNIX socket
@@ -49,16 +64,16 @@ var DataProviderShell = class DataProviderShell extends GObject.Object {
 
   refresh() {
     Promise.all([
-      this._execute('status').then(this._extractJson),
-      this._execute('prefs').then(this._extractJson),
+      this._execute('status').then(extractJson),
+      this._execute('prefs').then(extractJson),
     ])
-      .then(([status, prefs]) => {
-        if (status !== this.status) {
-          this.set_property('status', status);
-        }
-        if (prefs !== this.prefs) {
-          this.set_property('prefs', prefs);
-        }
+      .then(([statusRaw, prefsRaw]) => {
+
+
+        this.network = extractNetwork(statusRaw)
+        this.health = extractHealth(statusRaw)
+        this.prefs = extractPrefs(prefsRaw);
+        this.nodes = extractNodes(statusRaw);
       })
       .catch(logError);
 
@@ -101,12 +116,5 @@ var DataProviderShell = class DataProviderShell extends GObject.Object {
       if (cancelId > 0)
         cancellable.disconnect(cancelId);
     }
-  }
-
-  _extractJson(rawResponse) {
-    return rawResponse
-      .replace(/\s+/g, ' ')
-      .replace(/^[a-zA-Z0-9-;,_:./'\s]+{/, '{')
-      .replace(/}[a-zA-Z0-9\s]+?$/, '}');
   }
 }

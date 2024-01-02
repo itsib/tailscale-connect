@@ -21,7 +21,6 @@ const Me = ExtensionUtils.getCurrentExtension();
 const _ = ExtensionUtils.gettext;
 const { require } = Me.imports.libs.require;
 const { TextField } = require('prefs-ui/text-field');
-const { SettingsKey } = require('libs/utils');
 
 var AdvertiseTagsControl = class AdvertiseTagsControl extends Adw.ActionRow {
   static [GObject.properties] = {
@@ -231,7 +230,7 @@ class AclTagsList extends GObject.Object {
     super();
 
     this._settings = settings;
-    this._subscription = this._settings.connect(`changed::${SettingsKey.AdvertiseTags}`, () => this._sync());
+    this._subscription = this._settings.connect(`changed::advertise-tags`, () => this._sync());
 
     this._sync();
   }
@@ -300,7 +299,7 @@ class AclTagsList extends GObject.Object {
    * @private
    */
   _sync() {
-    let stored = this._settings.get_strv(SettingsKey.AdvertiseTags);
+    let stored = this._settings.get_strv('advertise-tags');
 
     stored = typeof stored === 'string' ? [stored] : Array.isArray(stored) ? stored : [];
 
@@ -324,7 +323,7 @@ class AclTagsList extends GObject.Object {
   _saveModel() {
     this._settings.block_signal_handler(this._subscription);
 
-    this._settings.set_strv(SettingsKey.AdvertiseTags, this._tagNames);
+    this._settings.set_strv('advertise-tags', this._tagNames);
 
     this._settings.unblock_signal_handler(this._subscription);
   }

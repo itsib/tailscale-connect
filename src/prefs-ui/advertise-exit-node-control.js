@@ -5,8 +5,6 @@
  *
  * @typedef {import(@girs/gio-2.0)} Gio
  *
- * @type {module:libs/utils.SettingsKey} SettingsKey
- *
  * @typedef {imports(@girs/gnome-shell/src/misc/extensionUtils.d.ts)} ExtensionUtils
  * @method ExtensionUtils#getSettings
  * @return Gio.Settings
@@ -16,7 +14,6 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const _ = ExtensionUtils.gettext;
 const { require } = Me.imports.libs.require;
-const { SettingsKey } = require('libs/utils');
 
 var AdvertiseExitNodeControl = class AdvertiseExitNodeControl extends Adw.ActionRow {
   static { GObject.registerClass(this) }
@@ -47,6 +44,6 @@ var AdvertiseExitNodeControl = class AdvertiseExitNodeControl extends Adw.Action
     this.set_activatable_widget(toggle);
     this.set_cursor_from_name('pointer');
 
-    this._settings.bind(SettingsKey.AdvertiseExitNode, toggle, 'active', Gio.SettingsBindFlags.DEFAULT);
+    this._settings.bind('advertise-exit-node', toggle, 'active', Gio.SettingsBindFlags.DEFAULT);
   }
 }

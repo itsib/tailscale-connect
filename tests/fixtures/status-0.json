@@ -1,10 +1,10 @@
 {
-  "Version": "1.56.1-tf1ea3161a",
+  "Version": "1.56.1",
   "TUN": true,
   "BackendState": "Running",
-  "AuthURL": "",
+  "AuthURL": "https://test.node.com",
   "TailscaleIPs": [
-    "100.81.245.32",
+    "100.0.245.32",
     "fd7a:115c:a1e0::de11:f520"
   ],
   "Self": {
@@ -13,13 +13,13 @@
     "HostName": "msi",
     "DNSName": "msi.local-domain.net.",
     "OS": "linux",
-    "UserID": 8205141071470196,
+    "UserID": 8200000000000111,
     "TailscaleIPs": [
-      "100.81.245.32",
+      "100.0.245.32",
       "fd7a:115c:a1e0::de11:f520"
     ],
     "AllowedIPs": [
-      "100.81.245.32/32",
+      "100.0.245.32/32",
       "fd7a:115c:a1e0::de11:f520/128"
     ],
     "Addrs": [
@@ -43,7 +43,7 @@
     "ExitNodeOption": false,
     "Active": false,
     "PeerAPIURL": [
-      "http://100.81.245.32:43173",
+      "http://100.0.245.32:43173",
       "http://[fd7a:115c:a1e0::de11:f520]:42341"
     ],
     "CapMap": {
@@ -75,7 +75,7 @@
       "HostName": "device",
       "DNSName": "device.local-domain.net.",
       "OS": "android",
-      "UserID": 8205141071470196,
+      "UserID": 8200000000000111,
       "TailscaleIPs": [
         "100.124.255.58",
         "fd7a:115c:a1e0::f27c:ff3a"
@@ -110,7 +110,7 @@
       "HostName": "amsterdam",
       "DNSName": "amsterdam.local-domain.net.",
       "OS": "linux",
-      "UserID": 8205141071470196,
+      "UserID": 8200000000000111,
       "TailscaleIPs": [
         "100.79.101.78",
         "fd7a:115c:a1e0::270f:654e"
@@ -154,7 +154,7 @@
       "HostName": "beget",
       "DNSName": "beget.local-domain.net.",
       "OS": "linux",
-      "UserID": 8205141071470196,
+      "UserID": 8200000000000111,
       "TailscaleIPs": [
         "100.110.85.28",
         "fd7a:115c:a1e0::1fae:551c"
@@ -198,7 +198,7 @@
       "HostName": "my-home.local",
       "DNSName": "my-home.local-domain.netlocal-domain.net.",
       "OS": "linux",
-      "UserID": 8205141071470196,
+      "UserID": 8200000000000111,
       "TailscaleIPs": [
         "100.108.86.99",
         "fd7a:115c:a1e0::70ec:5663"
@@ -237,10 +237,10 @@
     }
   },
   "User": {
-    "8205141071470196": {
-      "ID": 8205141071470196,
-      "LoginName": "itsib.su@gmail.com",
-      "DisplayName": "СергейКрайнов",
+    "8200000000000111": {
+      "ID": 8200000000000111,
+      "LoginName": "email@gmail.com",
+      "DisplayName": "Justin Justinovich",
       "ProfilePicURL": "https://lh3.googleusercontent.com/a/ACg8ocKDs1dRXBrb6w5jCuO_ofy5cY3_6EkpK8TCx72PcQoIiWVf=s96-c",
       "Roles": []
     }

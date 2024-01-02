@@ -1,50 +1,14 @@
 /**
  * @module libs/preferences
- */
-const { GObject, Gio } = imports.gi;
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-const { require } = Me.imports.libs.require;
-const { ConnectionState } = require('libs/utils');
-
-const ReadWriteFlags = GObject.ParamFlags.CONSTRUCT | GObject.ParamFlags.READWRITE;
-
-const IGNORE_HEALTH_MSGS = [
-  'state=Stopped, wantRunning=false',
-  'state=NeedsLogin, wantRunning=false',
-  'not in map poll',
-];
-
-/**
- * Peer model, stores common servers data
- * @typedef PeerRaw
- * @property {string} ID
- * @property {boolean} Online
- * @property {[string,string]} TailscaleIPs
- * @property {boolean} Online
- * @property {string} PublicKey
- * @property {string} HostName
- * @property {string} DNSName
- * @property {string} OS
- * @property {number} UserID
- * @property {string[]} Tags
- * @property {null} Addrs
- * @property {string} CurAddr
- * @property {string} Relay
- * @property {number} RxBytes
- * @property {number} TxBytes
- * @property {string} Created
- * @property {string} LastWrite
- * @property {string} LastSeen
- * @property {string} LastHandshake
- * @property {boolean} ExitNode
- * @property {boolean} ExitNodeOption
- * @property {boolean} Active
- * @property {boolean} InNetworkMap
- * @property {boolean} InMagicSock
- * @property {boolean} InEngine
  *
- * @interface PeerProperties
+ * @class
+ * @typedef {Object} PeersListModel - List model of peer connection info
+ * @extends GObject.Object
+ * @implements Gio.ListModel
+ *
+ * @class
+ * @typedef {Object} PeerModel - Peer model, stores common servers data
+ * @extends GObject.Object
  * @property {string} id
  * @property {string} domain
  * @property {string} name
@@ -58,11 +22,30 @@ const IGNORE_HEALTH_MSGS = [
  * @property {boolean} exitSupport
  *
  * @class
- * @implements PeerProperties
- * @extends GObject.Object
- * @typedef PeerModel
- * @export
+ * @typedef {Object} Preferences - Stores and watch with data provider tailscale states and preferences
+ * @extends {import(@girs/gobject-2.0).Object}
+ * @extends {import(@girs/gobject-2.0).Binding}
+ * @property {boolean} loggedIn
+ * @property {boolean} enabled
+ * @property {string} networkName
+ * @property {string} loginPageUrl
+ * @property {string} domain
+ * @property {string} health
+ * @property {boolean} acceptRoutes
+ * @property {boolean} shieldsUp
+ * @property {boolean} allowLanAccess
+ * @property {boolean} webClient
+ * @property {string} exitNode
+ * @property {PeersListModel} nodes
  */
+const { GObject, Gio } = imports.gi;
+const ExtensionUtils = imports.misc.extensionUtils;
+const Me = ExtensionUtils.getCurrentExtension();
+const { require } = Me.imports.libs.require;
+
+const ReadWriteFlags = GObject.ParamFlags.CONSTRUCT | GObject.ParamFlags.READWRITE;
+
+/** @alias module:libs/preferences.PeerModel */
 var PeerModel = class PeerModel extends GObject.Object {
   static [GObject.properties] = {
     id: GObject.ParamSpec.string('id', 'id', 'id', ReadWriteFlags, ''),
@@ -81,49 +64,46 @@ var PeerModel = class PeerModel extends GObject.Object {
   static { GObject.registerClass(this) }
 
   /**
-   * @param {PeerRaw} peerRaw
+   * @param {[string, string, string, string, string[], string, string, boolean, boolean, boolean, boolean]} peerRaw
    */
   constructor(peerRaw) {
     super();
-    this.set_property('id', peerRaw.ID);
-    this.set_property('domain', peerRaw.DNSName);
-    this.set_property('name', peerRaw.DNSName.split('.')[0]);
-    this.set_property('os', peerRaw.OS);
-    this.set_property('tags', (peerRaw.Tags && Array.isArray(peerRaw.Tags)) ? peerRaw.Tags.join(',') : '');
-    this.set_property('ipV4', peerRaw.TailscaleIPs[0]);
-    this.set_property('ipV6', peerRaw.TailscaleIPs[1]);
-    this.set_property('active', !!peerRaw.Active);
-    this.set_property('online', !!peerRaw.Online);
-    this.set_property('exitActive', !!peerRaw.ExitNode);
-    this.set_property('exitSupport', !!peerRaw.ExitNodeOption);
+    this.set_property('id',           peerRaw[0]);
+    this.set_property('domain',       peerRaw[1]);
+    this.set_property('name',         peerRaw[2]);
+    this.set_property('os',           peerRaw[3]);
+    this.set_property('tags',         peerRaw[4].join(','));
+    this.set_property('ipV4',         peerRaw[5]);
+    this.set_property('ipV6',         peerRaw[6]);
+    this.set_property('active',       peerRaw[7]);
+    this.set_property('online',       peerRaw[8]);
+    this.set_property('exitActive',   peerRaw[9]);
+    this.set_property('exitSupport',  peerRaw[10]);
   }
 
   /**
    * Compare this model and raw data
-   * @type {PeerRaw} peerRaw
+   * @type {[string, string, string, string, string[], string, string, boolean, boolean, boolean, boolean]} peerRaw
    * @return boolean true if fields is same
    */
   compare(peerRaw) {
-    const tags = peerRaw.Tags && Array.isArray(peerRaw.Tags) ? peerRaw.Tags.join(',') : '';
-    return this.domain === peerRaw.DNSName &&
-      this.os === peerRaw.OS &&
+    const [, domain, name, os,, ipV4, ipV6, active, online, exitActive, exitSupport] = peerRaw;
+    const tags = peerRaw[4].join(',');
+
+    return this.domain === domain &&
+      this.name === name &&
+      this.os === os &&
       this.tags === tags &&
-      this.ipV4 === peerRaw.TailscaleIPs[0] &&
-      this.ipV6 === peerRaw.TailscaleIPs[1] &&
-      this.active === !!peerRaw.Active &&
-      this.online === !!peerRaw.Online &&
-      this.exitActive === !!peerRaw.ExitNode &&
-      this.exitSupport === !!peerRaw.ExitNodeOption;
+      this.ipV4 === ipV4 &&
+      this.ipV6 === ipV6 &&
+      this.active === active &&
+      this.online === online &&
+      this.exitActive === exitActive &&
+      this.exitSupport === exitSupport;
   }
 }
 
-/**
- * List model of peer connection info
- * @class
- * @extends GObject.Object
- * @implements Gio.ListModel
- * @type {PeersListModel}
- */
+/** @alias module:libs/preferences.PeersListModel */
 var PeersListModel = class PeersListModel extends GObject.Object {
   static [GObject.interfaces] = [Gio.ListModel];
   static { GObject.registerClass(this) }
@@ -169,22 +149,9 @@ var PeersListModel = class PeersListModel extends GObject.Object {
 
   /**
    * Sync peers and stored list
-   * @param {PeerRaw[]} peersRaw
+   * @param {[string, string, string, string, string[], string, string, boolean, boolean, boolean, boolean][]} peersRaw
    */
-  put(peersRaw) {
-    if (peersRaw.length === this._peers.length) {
-      for (let i = 0; i < peersRaw.length; i++) {
-        const peer = this._peers[i];
-        if (!peer || !peer.compare(peersRaw[i])){
-          break;
-        }
-
-        if (i === (peersRaw.length - 1)) {
-          return;
-        }
-      }
-    }
-
+  changeAll(peersRaw) {
     const oldLen = this._peers.length;
     this._peers = new Array(peersRaw.length);
     this._ids = {};
@@ -194,35 +161,33 @@ var PeersListModel = class PeersListModel extends GObject.Object {
       this._peers[i] = peer;
       this._ids[peer.id] = i;
     }
+
     this.items_changed(0, oldLen, this._peers.length);
   }
 
   /**
    * Insert peer to list end if not exists.
    * if peer exists check peer changes and replace
-   * @param {PeerRaw} peerRaw
+   * @param {[string, string, string, string, string[], string, string, boolean, boolean, boolean, boolean]} peerRaw
    */
   append(peerRaw) {
-    if (typeof peerRaw !== 'object' || Array.isArray(peerRaw)) {
+    if (!Array.isArray(peerRaw) || peerRaw.length !== 11) {
       throw TypeError(`Wrong peer type`);
     }
-    if (!peerRaw.ID || !peerRaw.DNSName || !Array.isArray(peerRaw.TailscaleIPs)) {
-      throw TypeError(`Not enough required fields - ID, DNSName and TailscaleIPs`);
-    }
 
-    const index = this._ids[peerRaw.ID] ?? -1;
+    const index = this._ids[peerRaw[0]] ?? -1;
+    const peer = new PeerModel(peerRaw);
 
     // Add if not exists
     if (index === -1) {
       const i = this._peers.length;
-      this._peers.push(new PeerModel(peerRaw));
-      this._ids[peerRaw.ID] = i;
+      this._peers.push(peer);
+      this._ids[peer.id] = i;
       this.items_changed(i, 0, 1);
     }
     // Replace if exists and different
-    else if (!this._peers[index].compare(peerRaw)) {
-      this._peers.splice(index, 1, new PeerModel(peerRaw));
-      this._ids[peerRaw.ID] = index;
+    else {
+      this._peers.splice(index, 1, peer);
       this.items_changed(index, 1, 1);
     }
   }
@@ -241,6 +206,11 @@ var PeersListModel = class PeersListModel extends GObject.Object {
     this.items_changed(index, 1, 0);
   }
 
+  /**
+   * Get PeerModel by index
+   * @param {number} index
+   * @return {PeerModel}
+   */
   at(index) {
     return this._peers[index];
   }
@@ -255,6 +225,9 @@ var PeersListModel = class PeersListModel extends GObject.Object {
     return index > -1 ? this._peers[index] : null;
   }
 
+  /**
+   * Destroy list model
+   */
   destroy() {
     this._peers = null;
     this._ids = null;
@@ -277,28 +250,11 @@ var PeersListModel = class PeersListModel extends GObject.Object {
   }
 }
 
-/**
- * Tailscale preferences
- *
- * @class
- * @extends {import(@girs/gobject-2.0).Object}
- * @extends {import(@girs/gobject-2.0).Binding}
- * @property {ConnectionState} state
- * @property {string} networkName
- * @property {string} loginPageUrl
- * @property {string} domain
- * @property {string} health
- * @property {boolean} acceptRoutes
- * @property {boolean} shieldsUp
- * @property {boolean} allowLanAccess
- * @property {boolean} webClient
- * @property {string} exitNode
- * @property {PeersListModel} nodes
- * @exports
- */
+/** @alias module:libs/preferences.Preferences */
 var Preferences = class Preferences extends GObject.Object {
   static [GObject.properties] = {
-    state: GObject.ParamSpec.int('state', 'state', 'state', ReadWriteFlags, ConnectionState.NeedLogin, ConnectionState.Connected, 0),
+    loggedIn: GObject.ParamSpec.boolean('loggedIn', 'loggedIn', 'loggedIn', ReadWriteFlags, false),
+    enabled: GObject.ParamSpec.boolean('enabled', 'enabled', 'enabled', ReadWriteFlags, false),
     loginPageUrl: GObject.ParamSpec.string('loginPageUrl', 'loginPageUrl', 'loginPageUrl', ReadWriteFlags, ''),
     networkName: GObject.ParamSpec.string('networkName', 'networkName', 'networkName', ReadWriteFlags, ''),
     domain: GObject.ParamSpec.string('domain', 'domain', 'domain', ReadWriteFlags, ''),
@@ -314,14 +270,33 @@ var Preferences = class Preferences extends GObject.Object {
   static { GObject.registerClass(this) }
 
   _connections = [];
+  /** @type {DataProvider} */
+  _dataProvider
 
+  /**
+   * @class
+   * @typedef {Object} DataProvider
+   * @extends GObject.Object
+   * @property {string} network
+   * @property {string} health
+   * @property {string} prefs
+   * @property {string} nodes
+   * @function listen - Begin to watch tailscale options
+   * @method interrupt - Finish to watch tailscale options
+   * @method refresh - Force refresh options
+   * @method destroy - Destroy provider
+   *
+   * @param {DataProvider} dataProvider
+   */
   constructor(dataProvider) {
     super({ nodes: new PeersListModel() });
 
     this._dataProvider = dataProvider;
 
-    this._connections.push(this._dataProvider.connect('notify::status', this._changedStatus.bind(this)));
     this._connections.push(this._dataProvider.connect('notify::prefs', this._changedPrefs.bind(this)));
+    this._connections.push(this._dataProvider.connect('notify::network', this._changedNetwork.bind(this)));
+    this._connections.push(this._dataProvider.connect('notify::health', this._changedHealth.bind(this)));
+    this._connections.push(this._dataProvider.connect('notify::nodes', this._changedNodes.bind(this)));
 
     this._dataProvider.listen();
   }
@@ -342,62 +317,42 @@ var Preferences = class Preferences extends GObject.Object {
     this._dataProvider.refresh();
   }
 
+  /**
+   * Returns warnings
+   * @return string[]|null
+   */
+  getHealth() {
+    if (!this.health || this.health === '[]') {
+      return null;
+    }
+    return JSON.parse(this.health);
+  }
+
   _changedPrefs() {
     const prefs = JSON.parse(this._dataProvider.prefs);
 
-    if (prefs.LoggedOut || prefs.Config === null) {
-      this.set_property('state', ConnectionState.NeedLogin);
-    } else if (!prefs.WantRunning) {
-      this.set_property('state', ConnectionState.Disabled);
-    } else if (prefs.WantRunning && !prefs.ExitNodeID) {
-      this.set_property('state', ConnectionState.Enabled);
-    } else {
-      this.set_property('state', ConnectionState.Connected);
-    }
-
-    if (prefs.ControlURL !== this.loginPageUrl) this.set_property('loginPageUrl', prefs.ControlURL || '');
-    if (prefs.RouteAll !== this.acceptRoutes) this.set_property('acceptRoutes', prefs.RouteAll);
-    if (prefs.ShieldsUp !== this.shieldsUp) this.set_property('shieldsUp', prefs.ShieldsUp);
-    if (prefs.RunWebClient !== this.webClient) this.set_property('webClient', prefs.RunWebClient);
-    if (prefs.ExitNodeID !== this.exitNode) this.set_property('exitNode', prefs.ExitNodeID || '');
-    if (prefs.ExitNodeAllowLANAccess !== this.allowLanAccess) this.set_property('allowLanAccess', prefs.ExitNodeAllowLANAccess);
+    this.enabled = !!prefs[0];
+    this.loggedIn = !!prefs[1];
+    this.loginPageUrl = prefs[2] ?? '';
+    this.acceptRoutes = !!prefs[3];
+    this.shieldsUp = !!prefs[4];
+    this.webClient = !!prefs[5];
+    this.exitNode = prefs[6] ?? '';
+    this.allowLanAccess = !!prefs[7];
   }
 
-  _changedStatus() {
-    const status = JSON.parse(this._dataProvider.status);
-
-    if (status.CurrentTailnet?.Name !== this.networkName) this.set_property('networkName', status?.CurrentTailnet?.Name || '');
-    if (status.MagicDNSSuffix !== this.domain) this.set_property('domain', status.MagicDNSSuffix || '');
-
-    const health = this._parseHealthMessage(status.Health);
-    if (health !== this.health) this.set_property('health', health);
-
-    this.nodes.put(Object.values(status.Peer || {}));
+  _changedNetwork() {
+    const network = JSON.parse(this._dataProvider.network);
+    this.networkName = network[0];
+    this.domain = network[1];
   }
 
-  /**
-   * Parce and translate tailscale heath messages
-   * @param {string[]|null} messages
-   * @returns {string}
-   * @private
-   */
-  _parseHealthMessage(messages) {
-    if(!Array.isArray(messages)) {
-      return '';
-    }
-    const translated = [];
-    for (let i = 0; i < messages.length; i++) {
-      const srcMessage = messages[i];
-      if (IGNORE_HEALTH_MSGS.includes(srcMessage)) {
-        continue;
-      }
+  _changedHealth() {
+    this.health = this._dataProvider.health;
+  }
 
-      translated.push(srcMessage);
-    }
-    if (!translated.length) {
-      return '';
-    }
-    return JSON.stringify(translated);
+  _changedNodes() {
+    this.nodes.changeAll(JSON.parse(this._dataProvider.nodes));
   }
 }
 

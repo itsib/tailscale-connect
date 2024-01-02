@@ -17,7 +17,7 @@
   "AdvertiseRoutes": null,
   "NoSNAT": false,
   "NetfilterMode": 2,
-  "OperatorUser": "sergey",
+  "OperatorUser": "justin",
   "AutoUpdate": {
     "Check": true,
     "Apply": false
@@ -27,5 +27,19 @@
   },
   "PostureChecking": false,
   "NetfilterKind": "",
-  "Config": {}
+  "Config": {
+    "PrivateMachineKey": "privkey:0000000000000000000000000000000000000000000000000000000000000000",
+    "PrivateNodeKey": "privkey:0000000000000000000000000000000000000000000000000000000000000000",
+    "OldPrivateNodeKey": "privkey:0000000000000000000000000000000000000000000000000000000000000000",
+    "Provider": "google",
+    "UserProfile": {
+      "ID": 8200000000000111,
+      "LoginName": "email@gmail.com",
+      "DisplayName": "Justin Justinovich",
+      "ProfilePicURL": "https://lh3.googleusercontent.com/a/ACg8ocKDs1dRXBrb6w5jCuO_ofy5cY3_6EkpK8TCx72PcQoIiWVf=s96-c",
+      "Roles": []
+    },
+    "NetworkLockKey": "nlpriv:00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "NodeID": "wXsDpNuY6321CNTRL"
+  }
 }

@@ -17,7 +17,6 @@ const Me = ExtensionUtils.getCurrentExtension();
 const _ = ExtensionUtils.gettext;
 const { require } = Me.imports.libs.require;
 
-const { SettingsKey } = require('libs/utils');
 const { TextField } = require('prefs-ui/text-field');
 
 const DEFAULT_URL = 'https://controlplane.tailscale.com';
@@ -56,7 +55,7 @@ var LoginServerControl = class LoginServerControl extends Adw.ActionRow {
     this.add_suffix(box);
     this.set_activatable_widget(this._urlField);
 
-    this._settings.bind(SettingsKey.LoginServer, this._urlField, 'text', Gio.SettingsBindFlags.DEFAULT);
+    this._settings.bind('login-server', this._urlField, 'text', Gio.SettingsBindFlags.DEFAULT);
 
     this._urlField.connect('icon-clicked', this.reset.bind(this));
 

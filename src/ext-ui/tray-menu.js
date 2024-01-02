@@ -16,8 +16,7 @@ const { require } = Me.imports.libs.require;
 const { TSBtnSettings } = require('ext-ui/btn-settings');
 const { TSBtnConnect } = require('ext-ui/btn-connect');
 const { TSBtnSwitchCommon } = require('ext-ui/btn-switch-common');
-const { TSTrayIcon, TrayIconType } = require('ext-ui/tray-icon');
-const { ConnectionState } = require('libs/utils');
+const { TSTrayIcon } = require('ext-ui/tray-icon');
 const _ = ExtensionUtils.gettext;
 
 /**
@@ -33,7 +32,6 @@ const _ = ExtensionUtils.gettext;
  */
 var TSTrayMenu = class TSTrayMenu extends PanelMenu.Button {
   static { GObject.registerClass(this) }
-
   /**
    * @type {Preferences}
    * @private
@@ -59,12 +57,8 @@ var TSTrayMenu = class TSTrayMenu extends PanelMenu.Button {
     // Subscribe to open/close menu popup
     this.menu.connect('open-state-changed', this._onOpenChange.bind(this));
 
-    // Subscribe storage state change
-    this._preferences.connect('notify::health', this._onChangeState.bind(this));
-    this._preferences.connect('notify::state', this._onChangeState.bind(this));
-
     // Tray icon
-    this._trayIcon = new TSTrayIcon(this._logger);
+    this._trayIcon = new TSTrayIcon(this._preferences);
     this.add_child(this._trayIcon);
 
     // Menu items
@@ -95,8 +89,6 @@ var TSTrayMenu = class TSTrayMenu extends PanelMenu.Button {
   }
 
   destroy() {
-    this._trayIcon.destroy();
-    this._trayIcon = null;
     this._logger = null;
     this._preferences = null;
 
@@ -115,16 +107,6 @@ var TSTrayMenu = class TSTrayMenu extends PanelMenu.Button {
       this._preferences.refresh(true);
     } else {
       this._logger.debug('Menu close');
-    }
-  }
-
-  _onChangeState() {
-    if (this._preferences.health && this._preferences.state > 0) {
-      this._trayIcon.setStatus(TrayIconType.Warning);
-    } else if (this._preferences.state === ConnectionState.NeedLogin) {
-      this._trayIcon.setStatus(TrayIconType.Error);
-    } else {
-      this._trayIcon.setStatus(this._preferences.state);
     }
   }
 }

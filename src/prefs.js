@@ -4,7 +4,6 @@ const Me = ExtensionUtils.getCurrentExtension();
 const { require } = Me.imports.libs.require;
 
 const { Logger } = require('libs/logger');
-const { SettingsKey } = require('libs/utils');
 const { LoginServerControl } = require('prefs-ui/login-server-control');
 const { OperatorControl } = require('prefs-ui/operator-control');
 const { LogLevelControl } = require('prefs-ui/log-level-control');
@@ -56,7 +55,7 @@ class PreferencesWidget extends Adw.PreferencesPage {
     this.connect('unrealize', this.destroy.bind(this))
     this.connect('destroy', this.destroy.bind(this));
 
-    this._settings.connect(`changed::${SettingsKey.LogLevel}`, this._updateLogLevel.bind(this));
+    this._settings.connect(`changed::log-level`, this._updateLogLevel.bind(this));
 
     this._settings.connect('changed', this._onSettingsChanged.bind(this));
 
@@ -76,7 +75,7 @@ class PreferencesWidget extends Adw.PreferencesPage {
   }
 
   _updateLogLevel() {
-    const logLevel = this._settings.get_int(SettingsKey.LogLevel);
+    const logLevel = this._settings.get_int('log-level');
     this._logger.setLevel(logLevel);
   }
 }

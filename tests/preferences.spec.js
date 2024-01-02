@@ -1,9 +1,14 @@
+/**
+ * @module
+ * @ignore
+ */
 const { Gio } = imports.gi;
 const { Preferences, PeerModel } = imports.libs.preferences;
+const { extractJson, extractPrefs, extractNetwork, extractHealth, extractNodes } = imports.libs.utils;
 
 const decoder = new TextDecoder('utf-8');
 
-describe('Preferences', function () {
+describe('src/libs/preferences.js', function () {
   let prefsJson, statusJson, dataProvider;
 
   beforeAll(() => {
@@ -15,30 +20,32 @@ describe('Preferences', function () {
   })
 
   beforeEach(() => {
-    dataProvider = jasmine.createSpyObj('DataProvider', {
+    dataProvider = jasmine.createSpyObj( 'FakeDataProvider',  {
       connect: 1,
       listen: undefined,
       disconnect: undefined,
       destroy: undefined,
     });
 
-    dataProvider.prefs = prefsJson;
-    dataProvider.status = statusJson;
+    const prefs = extractJson(prefsJson);
+    const status = extractJson(statusJson);
+
+    dataProvider.network = extractNetwork(status);
+    dataProvider.health = extractHealth(status);
+    dataProvider.prefs = extractPrefs(prefs);
+    dataProvider.nodes = extractNodes(status);
   });
 
   it('Should be created', function () {
     const preferences = new Preferences(dataProvider);
 
     expect(preferences).toBeDefined();
-    expect(dataProvider.connect).toHaveBeenCalledTimes(2);
+    expect(dataProvider.connect).toHaveBeenCalledTimes(4);
     expect(dataProvider.listen).toHaveBeenCalledTimes(1);
   });
 
   it('Properties should be defined and same as textures', function () {
-    dataProvider.connect.and.callFake((event, callback) => {
-      callback()
-      return 1
-    });
+    dataProvider.connect.and.callFake((event, callback) =>  callback());
     const preferences = new Preferences(dataProvider);
 
     expect(preferences.loginPageUrl).toBe('https://test.node.com');
@@ -51,7 +58,7 @@ describe('Preferences', function () {
     expect(preferences.exitNode).toBe('nQHfhyY3PC21CNTRL');
   });
 
-  it('Status should be logged out', function () {
+  it('Checks properties depends from prefs', function () {
     let prefsCallback;
     dataProvider.connect.and.callFake((event, callback) => {
       if (event === 'notify::prefs') {
@@ -62,85 +69,74 @@ describe('Preferences', function () {
     });
     const preferences = new Preferences(dataProvider);
 
-    dataProvider.prefs = dataProvider.prefs
-      .replace(/("LoggedOut"):\s?(:?true|false)/, '$1: false')
-      .replace(/("Config"):\s?(:?\{}|null)/, '$1: {}')
-      .replace(/("WantRunning"):\s?(:?true|false)/, '$1: false')
-      .replace(/("ExitNodeID"):\s?(:?"[a-zA-Z0-9]+"|null)/, '$1: null');
+    // [enabled, loggedIn, loginPageUrl, acceptRoutes, shieldsUp, webClient, exitNode, allowLanAccess]
+    dataProvider.prefs = '[true,true,"https://test.node.com",false,true,false,"nQHfhyY3PC21CNTRL",true]';
     prefsCallback();
-    expect(preferences.state).toEqual(0);
+    expect(preferences.enabled).toBeTruthy();
+    expect(preferences.loggedIn).toBeTruthy();
+    expect(preferences.loginPageUrl).toBe('https://test.node.com');
+    expect(preferences.acceptRoutes).toBeFalsy();
+    expect(preferences.shieldsUp).toBeTruthy();
+    expect(preferences.webClient).toBeFalsy();
+    expect(preferences.exitNode).toBe('nQHfhyY3PC21CNTRL');
+    expect(preferences.allowLanAccess).toBeTruthy();
 
-    dataProvider.prefs = dataProvider.prefs
-      .replace(/("LoggedOut"):\s?(:?true|false)/, '$1: true')
-      .replace(/("Config"):\s?(:?\{}|null)/, '$1: {}')
-      .replace(/("WantRunning"):\s?(:?true|false)/, '$1: true')
-      .replace(/("ExitNodeID"):\s?(:?"[a-zA-Z0-9]+"|null)/, '$1: null');
+    dataProvider.prefs = '[false,false,"https://test.node.ua",true,false,true,"DQHfhyY7PC21CNTRL",false]';
     prefsCallback();
-    expect(preferences.state).toEqual(-1);
-
-    dataProvider.prefs = dataProvider.prefs
-      .replace(/("LoggedOut"):\s?(:?true|false)/, '$1: false')
-      .replace(/("Config"):\s?(:?\{}|null)/, '$1: null')
-      .replace(/("WantRunning"):\s?(:?true|false)/, '$1: true')
-      .replace(/("ExitNodeID"):\s?(:?"[a-zA-Z0-9]+"|null)/, '$1: null');
-    prefsCallback();
-    expect(preferences.state).toEqual(-1);
+    expect(preferences.enabled).toBeFalsy();
+    expect(preferences.loggedIn).toBeFalsy();
+    expect(preferences.loginPageUrl).toBe('https://test.node.ua');
+    expect(preferences.acceptRoutes).toBeTruthy();
+    expect(preferences.shieldsUp).toBeFalsy();
+    expect(preferences.webClient).toBeTruthy();
+    expect(preferences.exitNode).toBe('DQHfhyY7PC21CNTRL');
+    expect(preferences.allowLanAccess).toBeFalsy();
   });
 
-  it('Status should be connected or disconnected by WantRunning', function () {
-    let prefsCallback;
+  it('Checks properties depends from network', function () {
+    let networkCallback;
     dataProvider.connect.and.callFake((event, callback) => {
-      if (event === 'notify::prefs') {
-        prefsCallback = callback;
+      if (event === 'notify::network') {
+        networkCallback = callback;
       }
       callback();
       return 1
     });
     const preferences = new Preferences(dataProvider);
 
-    // Should be 0
-    dataProvider.prefs = dataProvider.prefs
-      .replace(/("WantRunning"):\s?(:?true|false)/, '$1: false')
-      .replace(/("ExitNodeID"):\s?(:?"[a-zA-Z0-9]+"|null)/, '$1: null')
-      .replace(/("Config"):\s?(:?\{}|null)/, '$1: {}');
-    prefsCallback();
-    expect(preferences.state).toEqual(0);
+    // [networkName, domain]
+    dataProvider.network = '["some network", "http://example.com"]';
+    networkCallback();
+    expect(preferences.networkName).toBe('some network');
+    expect(preferences.domain).toBe('http://example.com');
 
-    // Should be 1
-    dataProvider.prefs = dataProvider.prefs
-      .replace(/("WantRunning"):\s?(:?true|false)/, '$1: true')
-      .replace(/("ExitNodeID"):\s?(:?"[a-zA-Z0-9]+"|null)/, '$1: null')
-      .replace(/("Config"):\s?(:?\{}|null)/, '$1: {}');
-    prefsCallback();
-    expect(preferences.state).toEqual(1);
+    dataProvider.network = '["network some", "http://example.ua"]';
+    networkCallback();
+    expect(preferences.networkName).toBe('network some');
+    expect(preferences.domain).toBe('http://example.ua');
+
   });
 
-  it('Status should be connected trough exit node', function () {
-    let prefsCallback;
+  it('Checks properties depends from health', function () {
+    let healthCallback;
     dataProvider.connect.and.callFake((event, callback) => {
-      if (event === 'notify::prefs') {
-        prefsCallback = callback;
+      if (event === 'notify::health') {
+        healthCallback = callback;
       }
       callback();
       return 1
     });
     const preferences = new Preferences(dataProvider);
 
-    // Should be 1
-    dataProvider.prefs = dataProvider.prefs
-      .replace(/("WantRunning"):\s?(:?true|false)/, '$1: true')
-      .replace(/("ExitNodeID"):\s?(:?"[a-zA-Z0-9]+"|null)/, '$1: null')
-      .replace(/("Config"):\s?(:?\{}|null)/, '$1: {}');
-    prefsCallback();
-    expect(preferences.state).toEqual(1);
+    // [string, string]
+    dataProvider.health = '["Some message 1", "Some message 2"]';
+    healthCallback();
+    expect(preferences.health).toBe('["Some message 1", "Some message 2"]');
 
-    // Should be 2
-    dataProvider.prefs = dataProvider.prefs
-      .replace(/("WantRunning"):\s?(:?true|false)/, '$1: true')
-      .replace(/("ExitNodeID"):\s?(:?"[a-zA-Z0-9]+"|null)/, '$1: "NODE123"')
-      .replace(/("Config"):\s?(:?\{}|null)/, '$1: {}');
-    prefsCallback();
-    expect(preferences.state).toEqual(2);
+    dataProvider.health = '[]';
+    healthCallback();
+    expect(preferences.health).toBe('[]');
+
   });
 
   describe('PeersListModel', function () {
@@ -148,14 +144,15 @@ describe('Preferences', function () {
       dataProvider.connect.and.callFake((event, callback) => (callback() || 1));
       const preferences = new Preferences(dataProvider);
 
-      const peersRaw = Object.values(JSON.parse(dataProvider.status).Peer);
-      const _node1 = preferences.nodes.find(peersRaw[1].ID);
+      // nodes [[id, domain, name, os, [tags], ipV4, ipV6, active, online, exitActive, exitSupport], ...]
+      const nodesRaw = JSON.parse(dataProvider.nodes);
+      const _node1 = preferences.nodes.find(nodesRaw[3][0]);
 
-      expect(preferences.nodes.length).toEqual(4);
+      expect(preferences.nodes.length).toEqual(5);
       expect(_node1).toBeDefined();
       expect(_node1.domain).toBe('amsterdam.local-domain.net.');
       expect(_node1.name).toBe('amsterdam');
-      expect(_node1.os).toBe(peersRaw[1].OS);
+      expect(_node1.os).toBe(nodesRaw[3][3]);
       expect(_node1.tags).toBe('tag:exit,tag:home');
       expect(_node1.ipV4).toBe('100.79.101.78');
       expect(_node1.ipV6).toBe('fd7a:115c:a1e0::270f:654e');
@@ -169,10 +166,10 @@ describe('Preferences', function () {
       dataProvider.connect.and.callFake((event, callback) => !!(callback() || 1));
       const preferences = new Preferences(dataProvider);
 
-      expect(preferences.nodes.length).toEqual(4);
+      expect(preferences.nodes.length).toEqual(5);
 
       preferences.nodes.remove('nVquKqjvxV11CNTRL');
-      expect(preferences.nodes.length).toEqual(3);
+      expect(preferences.nodes.length).toEqual(4);
       expect(preferences.nodes.find('nVquKqjvxV11CNTRL')).toBeNull();
 
       const nodeToRemoved = preferences.nodes.at(2)
@@ -192,56 +189,32 @@ describe('Preferences', function () {
       });
       const preferences = new Preferences(dataProvider);
       preferences.nodes.connect('items-changed', (_list, position, removed, added) => {
-        expect(removed).toEqual(4);
+        expect(removed).toEqual(5);
         expect(added).toEqual(2);
       });
 
-      const peersRaw = Object.values(JSON.parse(dataProvider.status).Peer);
+      // nodes [[id, domain, name, os, [tags], ipV4, ipV6, active, online, exitActive, exitSupport], ...]
+      const peersRaw = JSON.parse(dataProvider.nodes);
 
       const peers = [
-        {...peersRaw[0], Online: !peersRaw[0].Online},
-        {...peersRaw[1], ExitNode: !peersRaw[1].ExitNode},
+        [...peersRaw[0]],
+        [...peersRaw[1]],
       ]
-      preferences.nodes.put(peers);
+      preferences.nodes.changeAll(peers);
 
       expect(preferences.nodes.length).toEqual(2);
     });
 
     it('PeerModel should changed by put method', function () {
-      let statusCallback;
       const onChange = jasmine.createSpy()
-      dataProvider.connect.and.callFake((event, callback) => {
-        if (event === 'notify::status') {
-          statusCallback = callback;
-        }
-        callback();
-        return 1
-      });
+      dataProvider.connect.and.callFake((event, callback) => callback());
       const preferences = new Preferences(dataProvider);
       preferences.nodes.connect('items-changed', onChange);
 
-      const parsed = JSON.parse(dataProvider.status);
+      const [id, domain, ...nodesRaw] = JSON.parse(dataProvider.nodes)[0];
+      preferences.nodes.append([id, 'new.domain', ...nodesRaw]);
 
-      preferences.nodes.put(Object.values(parsed.Peer));
-
-      expect(preferences.nodes.length).toEqual(4);
-      expect(onChange).not.toHaveBeenCalled();
-    });
-
-    it('Just one peer node should not replaced', function () {
-      const onChange = jasmine.createSpy()
-      dataProvider.connect.and.callFake((event, callback) => (callback() || 1));
-      const preferences = new Preferences(dataProvider);
-      preferences.nodes.connect('items-changed', onChange);
-
-      const peersRaw = Object.values(JSON.parse(dataProvider.status).Peer);
-
-      preferences.nodes.append(peersRaw[0]);
-      expect(preferences.nodes.length).toEqual(4);
-      expect(onChange).not.toHaveBeenCalled();
-
-      preferences.nodes.append({ ...peersRaw[0],  Online: !peersRaw[0].Online });
-      expect(preferences.nodes.length).toEqual(4);
+      expect(preferences.nodes.length).toEqual(5);
       expect(onChange).toHaveBeenCalled();
     });
 

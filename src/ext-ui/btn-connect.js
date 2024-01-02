@@ -7,8 +7,8 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const { require } = Me.imports.libs.require;
 
-const { SettingsKey } = require('libs/utils');
 const { networkUp, networkDown, setExitNode, login, logout } = require('libs/shell');
+const { firstUpper } = require('libs/utils');
 
 const _ = ExtensionUtils.gettext;
 
@@ -40,7 +40,6 @@ var TSBtnConnect = class TSBtnConnect extends PopupMenu.PopupSubMenuMenuItem {
     this._logger = logger;
 
     this._icons = {
-      [-2]: 'network-error-symbolic',
       [-1]: 'network-error-symbolic', // Logged Out
       [0]: 'network-wired-disconnected-symbolic',
       [1]: 'network-wired-symbolic',
@@ -54,79 +53,65 @@ var TSBtnConnect = class TSBtnConnect extends PopupMenu.PopupSubMenuMenuItem {
     this.style_class += ' ts-menu-item'
 
     this._preferences = preferences;
-    this._preferences.connect('notify::state', this.rerender.bind(this));
-    this._preferences.connect('notify::exitNode', this.rerender.bind(this));
-    this._preferences.connect('notify::nodes', this.rerender.bind(this));
+    this._connections = [];
+    this._connections.push(this._preferences.connect('notify::enabled', this.rerender.bind(this)));
+    this._connections.push(this._preferences.connect('notify::exitNode', this.rerender.bind(this)));
+    this._connections.push(this._preferences.connect('notify::loggedIn', this.rerender.bind(this)));
+    this._connections.push(this._preferences.connect('notify::nodes', this.rerender.bind(this)));
+    this.rerender(true);
 
     this.menu.connect('open-state-changed', this._setIsOpenState.bind(this));
+  }
 
-    // Separator
-    this._separator = new PopupMenu.PopupSeparatorMenuItem();
-    this._separator.set_style('margin-top: 0px important; margin-bottom: 0px important;');
-    this.menu.addMenuItem(this._separator);
-
-    // Connect/Disconnect submenu item
-    this._connectSwitchBtn = new PopupMenu.PopupMenuItem(_('Connect'), { style_class: 'ts-popup-sub-menu-item ts-connect-btn' });
-    this._connectSwitchBtn.connect('activate', this.onClickConnectBtn.bind(this))
-    this.menu.addMenuItem(this._connectSwitchBtn);
-
-    this._logoutBtn = new PopupMenu.PopupMenuItem(_('Logout'), { style_class: 'ts-popup-sub-menu-item ts-connect-btn' });
-    this._logoutBtn.connect('activate', this.onClickLogout.bind(this));
-    this._logoutBtn.hide();
-    this.menu.addMenuItem(this._logoutBtn);
-
-    this._loginBtn = new PopupMenu.PopupMenuItem(_('Login'), { style_class: 'ts-popup-sub-menu-item ts-connect-btn' });
-    this._loginBtn.connect('activate', this.onClickLogin.bind(this));
-    this._loginBtn.hide();
-    this.menu.addMenuItem(this._loginBtn);
+  destroy() {
+    if (this._preferences) {
+      for (let i = 0; i < this._connections.length; i++) {
+        this._preferences.disconnect(this._connections[i]);
+      }
+      this._preferences = null;
+      this._connections = null;
+    }
+    this._logger = null;
   }
 
   /**
    * Rerender label by changed state
-   * @param {Preferences} preferences
+   * @param {boolean} force
    */
-  rerender(preferences) {
-    if (this.expanded) {
+  rerender(force) {
+    if (!force && !this.expanded) {
       return;
     }
-
-    this.icon.icon_name = this._icons[preferences.state];
-
-    if (preferences.state === -1) {
-      return this._applyNeedLoginState();
-    } else if (preferences.state === 0) {
-      return this._applyDisconnectState();
-    } else {
-      return this._applyConnectedState(preferences);
+    if (!this._preferences.loggedIn) {
+      return this._rerenderLoggedOut();
     }
+    if (this._preferences.loggedIn && !this._preferences.enabled) {
+      return this._rerenderDisabled();
+    }
+
+    return this._rerenderEnabled();
   }
 
   /**
    * Manage connection button click handler
    */
-  onClickConnectBtn() {
-    const state = this._preferences.state;
-    const acceptRoutes = this._preferences.acceptRoutes;
-    const settings = ExtensionUtils.getSettings();
-    const operator = settings.get_string(SettingsKey.Operator);
+  onClickConnect() {
+    networkUp().then(() => this._preferences.refresh(true));
+  }
 
-    switch (state) {
-      case -1:
-        login({ operator });
-        break;
-      case 0:
-        networkUp({ operator, acceptRoutes }).then(() => this._preferences.refresh(true));
-        break;
-      default:
-        networkDown().then(() => this._preferences.refresh(true));
-    }
+  /**
+   * Disconnect means tailscale down command
+   */
+  onClickDisconnect() {
+    this._logger.debug('Disconnect');
+    networkDown().then(() => this._preferences.refresh(true));
   }
 
   /**
    * Call logout command
    */
   onClickLogout() {
-    this._logger.info('Logout');
+    this._logger.debug('Logout');
     logout();
   }
 
@@ -137,10 +122,10 @@ var TSBtnConnect = class TSBtnConnect extends PopupMenu.PopupSubMenuMenuItem {
     const settings = ExtensionUtils.getSettings();
 
     const flags = {
-      loginServer: settings.get_string(SettingsKey.LoginServer),
-      operator: settings.get_string(SettingsKey.Operator),
-      advertiseExitNode: settings.get_string(SettingsKey.AdvertiseExitNode),
-      advertiseTags: settings.get_strv(SettingsKey.AdvertiseTags),
+      loginServer: settings.get_string('login-server'),
+      operator: settings.get_string('operator'),
+      advertiseExitNode: settings.get_string('advertise-exit-node'),
+      advertiseTags: settings.get_strv('advertise-tags'),
       acceptRoutes: this._preferences.acceptRoutes,
       shieldsUp: this._preferences.shieldsUp,
       allowLanAccess: this._preferences.allowLanAccess,
@@ -157,104 +142,103 @@ var TSBtnConnect = class TSBtnConnect extends PopupMenu.PopupSubMenuMenuItem {
    * @private
    */
   _setIsOpenState(menu, open) {
-    this.set_property('expanded', open);
-  }
-
-  /**
-   * Returns all buttons for exit node manager
-   * @return {ConnectExitNodePopupMenuItem[]}
-   * @private
-   */
-  _getConnectExitNodeMenuItems() {
-    return this.menu.box.get_children().map(a => a._delegate).filter(item => {
-      return item instanceof ConnectExitNodePopupMenuItem;
-    });
-  }
-
-  /**
-   * Insert button before separator
-   * @param {ConnectExitNodePopupMenuItem} item
-   * @private
-   */
-  _insertConnectExitNodeMenuItem(item) {
-    this._separator.show();
-    const position = this._getConnectExitNodeMenuItems().length;
-    this.menu.addMenuItem(item, position);
+    this.expanded = open;
+    if (open) {
+      this.rerender(true);
+    }
   }
 
   /**
    * Remove buttons with linked nodes
    * @private
    */
-  _removeNodesSubmenuItems() {
-    const menuItems = this._getConnectExitNodeMenuItems();
-    for (let i = 0; i < menuItems.length; i++) {
-      let item = menuItems[i];
-      item.destroy();
-    }
-    this._separator.hide();
-    this._logoutBtn.hide();
-    this._loginBtn.hide();
-  }
+  _clearSubmenu() {
+    const menuItems = this.menu.box.get_children().map(a => a._delegate).filter(item => {
+      return item instanceof PopupMenu.PopupMenuItem || item instanceof PopupMenu.PopupSeparatorMenuItem;
+    });
 
-  /**
-   * Update labels and submenu
-   * @private
-   */
-  _applyDisconnectState() {
-    this._removeNodesSubmenuItems();
-    this.label.text = _('Offline');
-    this._connectSwitchBtn.label.text = _('Connect');
-    this._logoutBtn.show();
-    this._loginBtn.hide();
+    for (let i = 0; i < menuItems.length; i++) {
+      menuItems[i].destroy();
+    }
   }
 
   /**
    * Display "Login" button
    * @private
    */
-  _applyNeedLoginState() {
-    this._removeNodesSubmenuItems();
+  _rerenderLoggedOut() {
+    // 1) Set main button icon
+    this.icon.icon_name = this._icons[-1];
+    // 2) Change main button label
     this.label.text = _('Logged Out');
-    this._connectSwitchBtn.hide();
-    this._logoutBtn.hide();
-    this._loginBtn.show();
+    // 3) Clear submenu
+    this._clearSubmenu();
+
+    // 4) Add necessary buttons
+    const loginButton = new PopupMenu.PopupMenuItem(_('Login'), { style_class: 'ts-popup-sub-menu-item ts-connect-btn' });
+    loginButton.connect('activate', this.onClickLogin.bind(this));
+    this.menu.addMenuItem(loginButton);
+  }
+
+  /**
+   * Update labels and submenu
+   * @private
+   */
+  _rerenderDisabled() {
+    // 1) Set main button icon
+    this.icon.icon_name = this._icons[0];
+    // 2) Change main button label
+    this.label.text = _('Offline');
+    // 3) Clear submenu
+    this._clearSubmenu();
+
+    // 4) Add necessary buttons
+    const connectButton = new PopupMenu.PopupMenuItem(_('Connect'), { style_class: 'ts-popup-sub-menu-item ts-connect-btn' });
+    connectButton.connect('activate', this.onClickConnect.bind(this))
+    this.menu.addMenuItem(connectButton);
+
+    this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+    const logoutButton = new PopupMenu.PopupMenuItem(_('Logout'), { style_class: 'ts-popup-sub-menu-item ts-connect-btn' });
+    logoutButton.connect('activate', this.onClickLogout.bind(this));
+    this.menu.addMenuItem(logoutButton);
   }
 
   /**
    * Set labels and update buttons handlers
-   * @param {Preferences} preferences
    * @private
    */
-  _applyConnectedState(preferences) {
-    this._removeNodesSubmenuItems();
-    this.label.text = '';
+  _rerenderEnabled() {
+    const exitNodeId = this._preferences.exitNode;
+    const nodes = this._preferences.nodes || [];
+    const exitNode = exitNodeId && nodes.find(exitNodeId) || null;
 
-    if (preferences.nodes) {
-      this._insertConnectExitNodeMenuItem(new ConnectExitNodePopupMenuItem(this._logger, preferences));
+    // 1) Set main button icon
+    this.icon.icon_name = this._icons[exitNodeId ? 2 : 1];
+    // 2) Change main button label
+    this.label.text = exitNode ? (_('Exit Node') + ': ' + firstUpper(exitNode.name)) : _('Online');
+    // 3) Clear submenu
+    this._clearSubmenu();
 
-      for (let i = 0; i < preferences.nodes.length; i++) {
-        let node = preferences.nodes.at(i);
-        if (!node.exitSupport) {
-          continue;
-        }
+    // 4) Add necessary buttons
+    const noneButton = new ConnectExitNodePopupMenuItem(this._logger, this._preferences);
+    this.menu.addMenuItem(noneButton);
 
-        let submenuItem = new ConnectExitNodePopupMenuItem(this._logger, preferences, node);
-        let hostname = node.domain?.split(`.${preferences.domain}`)?.[0];
-        if (preferences.exitNode === node.id && hostname) {
-          this.label.text = _('Exit Node') + (hostname ? `: ${hostname}` : '');
-        }
-
-        this._insertConnectExitNodeMenuItem(submenuItem);
+    for (let i = 0; i < nodes.length; i++) {
+      let node = nodes.at(i);
+      if (!node.exitSupport) {
+        continue;
       }
+
+      let submenuItem = new ConnectExitNodePopupMenuItem(this._logger, this._preferences, node);
+      this.menu.addMenuItem(submenuItem);
     }
 
-    if (!this.label.text) {
-      this.label.text = _('Online');
-    }
+    this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-    this._connectSwitchBtn.label.text = _('Disconnect');
-    this._connectSwitchBtn.show();
+    const disconnectButton = new PopupMenu.PopupMenuItem(_('Disconnect'), { style_class: 'ts-popup-sub-menu-item ts-connect-btn' });
+    disconnectButton.connect('activate', this.onClickDisconnect.bind(this));
+    this.menu.addMenuItem(disconnectButton);
   }
 }
 
@@ -268,40 +252,39 @@ class ConnectExitNodePopupMenuItem extends PopupMenu.PopupMenuItem {
    *
    * @param {Logger} logger
    * @param {Preferences} preferences
-   * @param {?PeerModel} peerModel
+   * @param {?PeerModel} node
    */
-  constructor(logger, preferences, peerModel) {
-    let exitNode = preferences.exitNode;
-    let label = peerModel?.name ?? 'none';
-    label = label.charAt(0).toUpperCase() + label.slice(1);
+  constructor(logger, preferences, node) {
+    const exitNodeId = preferences.exitNode;
+    const label = firstUpper(node?.name ?? 'none');
 
     super(label, { style_class: 'ts-popup-sub-menu-item' });
 
     this._preferences = preferences;
     this._logger = logger;
 
-    const enabled = (!exitNode && !peerModel) || exitNode === peerModel?.id;
+    const enabled = (!exitNodeId && !node) || exitNodeId === node?.id;
 
     this.connect('notify::enabled', self => {
       this.setOrnament(self.enabled ? PopupMenu.Ornament.DOT : PopupMenu.Ornament.NONE);
     });
     this.set_property('enabled', enabled);
 
-    this.connect('activate', this._onClick.bind(this, preferences, peerModel));
+    this.connect('activate', this._onClick.bind(this, preferences, node));
   }
 
   /**
    * Menu item click handler switch exit node
    * @param {Preferences} preferences
-   * @param {?PeerModel} peerModel
+   * @param {?PeerModel} node
    * @private
    */
-  _onClick(preferences, peerModel) {
+  _onClick(preferences, node) {
     if (this.enabled) {
       this._logger.info('Already enabled');
       return;
     }
-    this._logger.debug('Set exit node to', peerModel?.name ?? 'none');
-    setExitNode(peerModel?.name).then(() => preferences.refresh(true));
+    this._logger.debug('Set exit node to', node?.name ?? 'none');
+    setExitNode(node?.name).then(() => preferences.refresh(true));
   }
 }

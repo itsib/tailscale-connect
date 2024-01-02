@@ -16,8 +16,8 @@
  * @typedef Extension
  * @type {object}
  * @property {string} uuid
- * @property {ExtensionType} type
- * @property {ExtensionState} state
+ * @property {number} type
+ * @property {number} state
  * @property {string} path
  * @property {string} error
  * @property {boolean} hasPrefs
@@ -36,8 +36,8 @@ const { TSTrayMenu } = require('ext-ui/tray-menu');
 const { Notifications } = require('ext-ui/notifications');
 const { Logger, Level } = require('libs/logger');
 const { Preferences } = require('libs/preferences');
-const { SettingsKey } = require('libs/utils');
-const { DataProviderShell } = require('libs/data-provider-shell');
+const { DataProviderShell: DataProvider } = require('libs/data-provider-shell');
+// const { DataProviderSock: DataProvider } = require('libs/data-provider-sock');
 
 class TsConnectExtension {
   /**
@@ -83,14 +83,14 @@ class TsConnectExtension {
   enable() {
     this._logger = new Logger(this._domain);
 
-    const dataProvider = new DataProviderShell();
+    const dataProvider = new DataProvider();
     this._preferences = new Preferences(dataProvider);
 
     this._notifications = new Notifications(this._logger);
     this._menu = new TSTrayMenu({ logger: this._logger, preferences: this._preferences });
     this._settings = ExtensionUtils.getSettings();
 
-    this._logLevelSub = this._settings.connect(`changed::${SettingsKey.LogLevel}`, this._onLogLevelChange.bind(this));
+    this._logLevelSub = this._settings.connect(`changed::log-level`, this._onLogLevelChange.bind(this));
     this._onLogLevelChange();
 
     Main.panel.addToStatusArea(this._uuid, this._menu, 0.5, 'right');
@@ -121,7 +121,7 @@ class TsConnectExtension {
   }
 
   _onLogLevelChange() {
-    const logLevel = this._settings.get_int(SettingsKey.LogLevel);
+    const logLevel = this._settings.get_int('log-level');
 
     this._logger.setLevel(Level.Debug);
     this._logger.info(`Log level updated to ${logLevel}`);
@@ -130,12 +130,10 @@ class TsConnectExtension {
   }
 
   _onHealthChange() {
-    if (this._preferences.health) {
-      const messages = JSON.parse(this._preferences.health);
-      if (Array.isArray(messages)) {
-        messages.forEach(message => this._notifications.push(0, message));
-        return;
-      }
+    const warnings = this._preferences.getHealth();
+    if (warnings) {
+      warnings.forEach(message => this._notifications.push(0, message));
+      return;
     }
     this._notifications.clear();
   }
