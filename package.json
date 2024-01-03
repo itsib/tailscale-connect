@@ -10,17 +10,17 @@
     "clean": "rm -rf dist",
     "build": "node scripts/build.js",
     "reload": "./scripts/reload.sh",
-    "logs": "./scripts/logs.sh"
+    "logs": "./scripts/logs.sh",
+    "test": "jasmin"
   },
   "devDependencies": {
+    "@girs/adw-1": "^1.4.0-3.2.6",
     "@girs/gjs": "^3.2.3",
     "@girs/gnome-shell": "^3.0.0",
     "@girs/gtk-4.0": "^4.10.5-3.2.3",
     "@girs/soup-2.4": "^2.74.3-3.2.6",
     "@types/node": "^18.18.9",
-    "adm-zip": "^0.5.10"
-  },
-  "dependencies": {
-    "@girs/adw-1": "^1.4.0-3.2.6"
+    "adm-zip": "^0.5.10",
+    "jasmine-gjs": "^2.6.6"
   }
 }
