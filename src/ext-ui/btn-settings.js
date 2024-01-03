@@ -23,9 +23,14 @@ var TSBtnSettings = class TSBtnSettings extends PopupMenu.PopupImageMenuItem {
 
   _onClick() {
     try {
-      ExtensionUtils.openPrefs();
-    } catch (e) {
-      logError(e, 'Open prefs')
+      const res = ExtensionUtils.openPrefs();
+      if (res instanceof Promise) {
+        res.catch(error => {
+          logError(error, 'Open prefs');
+        });
+      }
+    } catch (error) {
+      logError(error, 'Open prefs');
     }
   }
 }

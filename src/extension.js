@@ -81,17 +81,16 @@ class TsConnectExtension {
   }
 
   enable() {
+    this._settings = ExtensionUtils.getSettings();
     this._logger = new Logger(this._domain);
+
+    this._settings.bind('log-level', this._logger, 'logLevel', Gio.SettingsBindFlags.DEFAULT);
 
     const dataProvider = new DataProvider();
     this._preferences = new Preferences(dataProvider);
 
     this._notifications = new Notifications(this._logger);
     this._menu = new TSTrayMenu({ logger: this._logger, preferences: this._preferences });
-    this._settings = ExtensionUtils.getSettings();
-
-    this._logLevelSub = this._settings.connect(`changed::log-level`, this._onLogLevelChange.bind(this));
-    this._onLogLevelChange();
 
     Main.panel.addToStatusArea(this._uuid, this._menu, 0.5, 'right');
 
@@ -118,15 +117,6 @@ class TsConnectExtension {
 
     this._logger.info('Extension disabled ---');
     this._logger = null;
-  }
-
-  _onLogLevelChange() {
-    const logLevel = this._settings.get_int('log-level');
-
-    this._logger.setLevel(Level.Debug);
-    this._logger.info(`Log level updated to ${logLevel}`);
-
-    this._logger.setLevel(logLevel);
   }
 
   _onHealthChange() {

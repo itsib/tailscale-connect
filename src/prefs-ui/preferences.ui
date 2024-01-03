@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface domain="tailscale-connect@itsib.github.com">
+  <!-- Network Configuration -->
+  <object class="AdwPreferencesPage" id="network">
+    <property name="title" translatable="yes">Network</property>
+    <property name="icon_name">network-wired-symbolic</property>
+    <child>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">Network Configuration</property>
+        <property name="description" translatable="yes">Sets the parameters for startup and connecting your device to the Tailscale</property>
+        <!-- Login-Server Url -->
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Login-Server Url</property>
+            <property name="subtitle" translatable="yes">If you are using Headscale for your control server, use your Headscale instance’s URL.</property>
+            <property name="visible">true</property>
+            <property name="activatable-widget">login-server-entry</property>
+
+            <child>
+              <object class="GtkBox" id="login-server-box">
+                <property name="spacing">0</property>
+                <property name="vexpand">true</property>
+                <property name="vexpand_set">true</property>
+                <property name="height_request">20</property>
+                <property name="width_request">180</property>
+                <property name="margin_top">20</property>
+                <property name="margin_bottom">12</property>
+                <property name="orientation">horizontal</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="orientation">vertical</property>
+
+                    <child>
+                      <object class="GtkEntry" id="login-server-entry">
+                        <property name="visible">true</property>
+                        <property name="can-focus">true</property>
+                        <property name="valign">center</property>
+                        <property name="input_purpose">url</property>
+                        <property name="hexpand">true</property>
+                        <property name="hexpand_set">true</property>
+                        <accessibility>
+                          <relation name="labelled-by">login-server-label</relation>
+                        </accessibility>
+                        <signal name="changed" handler="_validate" swapped="no"/>
+                        <style>
+                          <class name="required" />
+                          <class name="url" />
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="login-server-label">
+                        <property name="halign">start</property>
+                        <property name="height_request">10</property>
+                        <property name="margin-start">5</property>
+                        <property name="margin-top">1</property>
+                        <property name="vexpand">false</property>
+                        <property name="use-markup">true</property>
+                        <property name="use-markup">true</property>
+                        <style>
+                          <class name="error"/>
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+
+          </object>
+        </child>
+        <!-- Operator -->
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Operator</property>
+            <property name="subtitle" translatable="yes">Provide a Unix username other than root to operate tailscaled.</property>
+            <property name="visible">true</property>
+            <property name="activatable-widget">operator-entry</property>
+
+            <child>
+              <object class="GtkBox" id="operator-box">
+                <property name="spacing">0</property>
+                <property name="vexpand">true</property>
+                <property name="vexpand_set">true</property>
+                <property name="height_request">20</property>
+                <property name="width_request">100</property>
+                <property name="margin_top">16</property>
+                <property name="margin_bottom">16</property>
+                <property name="orientation">horizontal</property>
+
+                <child>
+                  <object class="GtkEntry" id="operator-entry">
+                    <property name="visible">true</property>
+                    <property name="can-focus">true</property>
+                    <property name="valign">center</property>
+                    <property name="input_purpose">name</property>
+                    <property name="hexpand">false</property>
+                    <property name="hexpand_set">false</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <!-- Advertise Exit Node -->
+        <child>
+          <object class="AdwActionRow" id="advertise-exit-node-row">
+            <property name="title" translatable="yes">Advertise Exit Node</property>
+            <property name="subtitle" translatable="yes">Offer to be an exit node for internet traffic for the Tailnet.</property>
+            <property name="visible">true</property>
+            <property name="activatable-widget">advertise-exit-node-switch</property>
+
+            <child>
+              <object class="GtkBox">
+                <property name="spacing">0</property>
+                <property name="vexpand">true</property>
+                <property name="vexpand_set">true</property>
+                <property name="height_request">20</property>
+                <property name="margin_top">16</property>
+                <property name="margin_bottom">16</property>
+                <property name="orientation">horizontal</property>
+
+                <child>
+                  <object class="GtkSwitch" id="advertise-exit-node-switch">
+                    <property name="visible">true</property>
+                    <property name="focusable">true</property>
+                    <property name="valign">center</property>
+                    <property name="halign">end</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <!-- Advertise Tags -->
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Advertise Tags</property>
+            <property name="subtitle" translatable="yes">This device identity or appointment as the combination of tags. (e.g. "tag:eng, tag:montreal, tag:ssh")</property>
+            <property name="visible">true</property>
+
+            <child>
+              <object class="GtkBox">
+                <property name="spacing">0</property>
+                <property name="vexpand">true</property>
+                <property name="vexpand_set">true</property>
+                <property name="height_request">20</property>
+                <property name="margin_top">16</property>
+                <property name="margin_bottom">16</property>
+                <property name="orientation">horizontal</property>
+
+                <child>
+                  <object class="GtkBox">
+                    <property name="orientation">vertical</property>
+
+                    <child>
+                      <object class="GtkEntry" id="advertise-tags-entry">
+                        <property name="visible">true</property>
+                        <property name="can-focus">true</property>
+                        <property name="valign">center</property>
+                        <property name="hexpand">true</property>
+                        <property name="hexpand_set">true</property>
+                        <property name="secondary_icon_name">list-add-symbolic</property>
+                        <signal name="changed" handler="_validate" swapped="no"/>
+                        <signal name="activate" handler="_addAclTag" swapped="no"/>
+                        <signal name="icon-press" handler="_addAclTag" swapped="no"/>
+
+                        <accessibility>
+                          <relation name="labelled-by">advertise-tags-label</relation>
+                        </accessibility>
+                        <style>
+                          <class name="acl-tag" />
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="advertise-tags-label">
+                        <property name="halign">start</property>
+                        <property name="height_request">10</property>
+                        <property name="margin-start">5</property>
+                        <property name="margin-top">1</property>
+                        <property name="vexpand">false</property>
+                        <property name="use-markup">true</property>
+                        <style>
+                          <class name="error"/>
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkGridView" id="advertise-tags-box">
+                        <property name="orientation">horizontal</property>
+                        <property name="halign">start</property>
+                        <property name="valign">start</property>
+                        <property name="width_request">140</property>
+                        <style>
+                          <class name="acl-tag-grid" />
+                        </style>
+                        <property name="model">
+                          <object class="GtkNoSelection">
+                            <property name="model">
+                              <object class="GtkStringList" id="advertise-tags-list">
+                                <items />
+                              </object>
+                            </property>
+                          </object>
+                        </property>
+                        <property name="factory">
+                          <object class="GtkBuilderListItemFactory">
+                            <property name="bytes"><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<interface domain="tailscale-connect@itsib.github.com">
+  <template class="GtkListItem">
+    <property name="child">
+      <object class="GtkBox">
+        <property name="orientation">horizontal</property>
+        <property name="valign">center</property>
+        <property name="halign">end</property>
+        <style>
+          <class name="acl-tag-container" />
+        </style>
+
+        <child>
+          <object class="GtkLabel">
+            <property name="lines">1</property>
+            <property name="single-line-mode">true</property>
+            <property name="valign">center</property>
+            <binding name="label">
+              <lookup name="string" type="GtkStringObject">
+                <lookup name="item">GtkListItem</lookup>
+              </lookup>
+            </binding>
+            <style>
+              <class name="acl-tag-label" />
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton">
+            <property name="icon_name">window-close-symbolic</property>
+            <property name="accessible_role">button</property>
+            <property name="has_frame">false</property>
+            <signal name="clicked" handler="_deleteAclTag" swapped="no" />
+            <style>
+              <class name="acl-tag-btn-remove" />
+            </style>
+          </object>
+        </child>
+      </object>
+    </property>
+  </template>
+</interface>
+]]></property>
+                          </object>
+                        </property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+
+  <!-- Daemon configuration -->
+  <object class="AdwPreferencesPage" id="daemon">
+    <property name="title" translatable="yes">System</property>
+    <property name="icon_name">applications-engineering-symbolic</property>
+
+    <!-- Extension log level -->
+    <child>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">System Settings</property>
+        <property name="description" translatable="yes">The system settings of the tailscaled daemon. And other settings for interaction with your system.</property>
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Extension Logging</property>
+            <property name="subtitle" translatable="yes">Which messages will be displayed in the log.</property>
+            <property name="visible">true</property>
+            <property name="activatable-widget">log-level-select</property>
+
+            <child>
+              <object class="GtkBox" id="log-level-box">
+                <property name="spacing">0</property>
+                <property name="height_request">20</property>
+                <property name="width_request">125</property>
+                <property name="margin_top">16</property>
+                <property name="margin_bottom">16</property>
+                <child>
+                  <object class="GtkComboBoxText" id="log-level-select">
+                    <property name="has-entry">0</property>
+                    <property name="width_request">125</property>
+                    <items>
+                      <item id="0" translatable="yes">Disabled</item>
+                      <item id="1" translatable="yes">Error</item>
+                      <item id="2" translatable="yes">Info</item>
+                      <item id="3" translatable="yes">Debug</item>
+                    </items>
+                    <style>
+                      <class name="ts-combo-box-text" />
+                    </style>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+<!--        <child>-->
+<!--          <object class="AdwActionRow">-->
+
+<!--          </object>-->
+<!--        </child>-->
+      </object>
+    </child>
+
+  </object>
+
+</interface>

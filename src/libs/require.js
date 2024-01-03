@@ -3,7 +3,7 @@
  * @param {string} name Module name
  * @returns {{}|*}
  */
-var require = function require(name) {
+var require = function (name) {
   const [dir, file] = name.split('/');
 
   try {

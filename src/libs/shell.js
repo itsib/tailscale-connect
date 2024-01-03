@@ -119,15 +119,6 @@
  */
 
 const { Gio } = imports.gi;
-const Main = imports.ui.main;
-
-function showNotifyError(error) {
-  const msg = `${error}`.split(/[;.]/).map(sen => {
-    sen = sen.trim();
-    return sen.charAt(0).toUpperCase() + sen.substring(1) + '. ';
-  }).join('')
-  Main.notifyError('Command execution error.', msg);
-}
 
 /**
  * Run shell command
@@ -207,7 +198,7 @@ var login = function login(flags) {
     .then(authUrl => {
       return shell(['xdg-open', authUrl], Gio.SubprocessFlags.STDOUT_SILENCE);
     })
-    .catch(error => showNotifyError(error));
+    .catch(logError);
 }
 
 /**
@@ -224,7 +215,7 @@ var logout = function logout() {
 
       throw error;
     })
-    .catch(error => showNotifyError(error));
+    .catch(logError);
 }
 
 /**
@@ -247,7 +238,7 @@ var networkUp = function networkUp(flags = {}) {
 
       throw error;
     })
-    .catch(error => showNotifyError(error));
+    .catch(logError);
 }
 
 /**

@@ -164,15 +164,3 @@ var extractNodes = function extractNodes(status) {
   nodes = nodes.length ? nodes.substring(0, nodes.length - 1) : nodes;
   return `[${nodes}]`;
 }
-
-// this.set_property('id', peerRaw.ID);
-//     this.set_property('domain', peerRaw.DNSName);
-//     this.set_property('name', peerRaw.DNSName.split('.')[0]);
-//     this.set_property('os', peerRaw.OS);
-//     this.set_property('tags', (peerRaw.Tags && Array.isArray(peerRaw.Tags)) ? peerRaw.Tags.join(',') : '');
-//     this.set_property('ipV4', peerRaw.TailscaleIPs[0]);
-//     this.set_property('ipV6', peerRaw.TailscaleIPs[1]);
-//     this.set_property('active', !!peerRaw.Active);
-//     this.set_property('online', !!peerRaw.Online);
-//     this.set_property('exitActive', !!peerRaw.ExitNode);
-//     this.set_property('exitSupport', !!peerRaw.ExitNodeOption);
