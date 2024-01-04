@@ -49,7 +49,7 @@ var DataProviderSock = class DataProviderSock extends GObject.Object {
     this.interrupt();
     this.refresh();
 
-    this._logger.log('Listen socket')
+    this._logger.debug('Listen socket');
     this._loop().catch(error => {
       logError(error);
     });

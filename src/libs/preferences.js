@@ -163,7 +163,6 @@ var PeersListModel = class PeersListModel extends GObject.Object {
       this._ids[peer.id] = i;
     }
 
-    log(`Peers ${this._peers.length}`)
     this.items_changed(0, oldLen, this._peers.length);
   }
 
