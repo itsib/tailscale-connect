@@ -22,7 +22,7 @@ var DataProviderSock = class DataProviderSock extends GObject.Object {
    * @type {string}
    * @private
    */
-  _sock = '/var/run/tailscale/tailscaled.sock';
+  _socket = '/var/run/tailscale/tailscaled.sock';
   /**
    * Command for watch tailscale status
    * @type {string[]}
@@ -36,9 +36,12 @@ var DataProviderSock = class DataProviderSock extends GObject.Object {
    */
   _cancelable = null;
 
-  constructor() {
+  constructor(logger, settings) {
     super();
+    this._settings = settings;
+    this._logger = logger;
 
+    this._socket = this._settings.get_string('socket');
     this._subprocess = Gio.Subprocess.new(this._commands, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE);
   }
 
@@ -46,10 +49,10 @@ var DataProviderSock = class DataProviderSock extends GObject.Object {
     this.interrupt();
     this.refresh();
 
-    console.log('listen')
+    this._logger.log('Listen socket')
     this._loop().catch(error => {
       logError(error);
-    })
+    });
   }
 
   interrupt() {
@@ -60,7 +63,8 @@ var DataProviderSock = class DataProviderSock extends GObject.Object {
   }
 
   refresh() {
-    Promise.all([this._refreshPrefs(), this._refreshStatus()]).catch(logError);
+    Promise.all([this._refreshPrefs(), this._refreshStatus()])
+      .catch(error => this._logger.error(error));
   }
 
   destroy() {
@@ -83,11 +87,12 @@ var DataProviderSock = class DataProviderSock extends GObject.Object {
         if (!object) continue;
 
         if (object.Prefs) {
+          this._logger.debug('Receive new prefs')
           this.prefs = extractPrefs(object.Prefs);
         }
         this._refreshStatus();
       } catch (e) {
-        logError('Loop error' + e);
+        this._logger.error(e, 'Loop error');
       }
     }
   }
@@ -142,7 +147,7 @@ var DataProviderSock = class DataProviderSock extends GObject.Object {
     const commands = [
       '/bin/bash',
       '-c',
-      `echo -e "GET /localapi/v0/${param} HTTP/1.1\\r\\nHost: local-tailscaled.sock\\r\\n" | nc -U -N ${this._sock}`,
+      `echo -e "GET /localapi/v0/${param} HTTP/1.1\\r\\nHost: local-tailscaled.sock\\r\\n" | nc -U -N ${this._socket}`,
     ];
     const proc = Gio.Subprocess.new(commands, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE);
 
@@ -173,7 +178,7 @@ var DataProviderSock = class DataProviderSock extends GObject.Object {
       const prefsRaw = await this._execute('prefs').then(extractJson);
       this.prefs = extractPrefs(prefsRaw);
     } catch (error) {
-      logError(error);
+      this._logger.error(error);
     }
   }
 
@@ -189,7 +194,7 @@ var DataProviderSock = class DataProviderSock extends GObject.Object {
       this.health = extractHealth(statusRaw)
       this.nodes = extractNodes(statusRaw);
     } catch (error) {
-      logError(error);
+      this._logger.error(error);
     }
   }
 }

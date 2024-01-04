@@ -54,7 +54,7 @@ describe('src/libs/utils.js', () => {
       const result = extractJson(statusJson);
       const network = extractNetwork(result);
 
-      expect(network).toBe('["email@gmail.com","local-domain.net"]');
+      expect(network).toBe('["email@gmail.com","local-domain.net","nYsTpNwY6321CNTRL"]');
       expect(() => JSON.parse(network)).not.toThrow();
     });
 
@@ -62,7 +62,7 @@ describe('src/libs/utils.js', () => {
       expect(() => {
         const prefs = extractNetwork();
 
-        expect(prefs).toBe('["",""]');
+        expect(prefs).toBe('["","",""]');
         expect(() => JSON.parse(prefs)).not.toThrow();
       }).not.toThrow();
     });

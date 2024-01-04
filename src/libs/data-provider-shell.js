@@ -31,7 +31,7 @@ var DataProviderShell = class DataProviderShell extends GObject.Object {
    * @type {string}
    * @private
    */
-  _sock = '/var/run/tailscale/tailscaled.sock';
+  _socket = '/var/run/tailscale/tailscaled.sock';
   /**
    * Refresh timer
    * @private {number|null}
@@ -44,8 +44,9 @@ var DataProviderShell = class DataProviderShell extends GObject.Object {
    */
   _updIntervalSec = 10;
 
-  constructor() {
+  constructor(socket) {
     super();
+    this._socket = socket;
   }
 
   listen() {
@@ -95,7 +96,7 @@ var DataProviderShell = class DataProviderShell extends GObject.Object {
     const commands = [
       '/bin/bash',
       '-c',
-      `echo -e "GET /localapi/v0/${param} HTTP/1.1\\r\\nHost: local-tailscaled.sock\\r\\n" | nc -U -N ${this._sock}`,
+      `echo -e "GET /localapi/v0/${param} HTTP/1.1\\r\\nHost: local-tailscaled.sock\\r\\n" | nc -U -N ${this._socket}`,
     ];
     const proc = Gio.Subprocess.new(commands, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE);
 

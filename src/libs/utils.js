@@ -86,7 +86,9 @@ var extractPrefs = function extractPrefs(prefs) {
 var extractNetwork = function extractNetwork(status) {
   const networkName = status && status.CurrentTailnet && status.CurrentTailnet.Name || '';
   const domain = status && (status.MagicDNSSuffix || (status.CurrentTailnet && status.CurrentTailnet.Name)) || ''
-  return `["${networkName}","${domain}"]`;
+  const myNodeId = status && status.Self && status.Self.ID || ''
+
+  return `["${networkName}","${domain}","${myNodeId}"]`;
 }
 
 /**

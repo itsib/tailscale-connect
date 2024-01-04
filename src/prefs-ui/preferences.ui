@@ -280,7 +280,6 @@
             <property name="subtitle" translatable="yes">Which messages will be displayed in the log.</property>
             <property name="visible">true</property>
             <property name="activatable-widget">log-level-select</property>
-
             <child>
               <object class="GtkBox" id="log-level-box">
                 <property name="spacing">0</property>
@@ -301,6 +300,64 @@
                     <style>
                       <class name="ts-combo-box-text" />
                     </style>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Socket</property>
+            <property name="subtitle" translatable="yes">Unix socket path used by the Tailscale binary. Using this local API, the extension receives data and sends commands.</property>
+            <property name="visible">true</property>
+            <property name="activatable-widget">socket-entry</property>
+            <child>
+              <object class="GtkBox" id="socket-box">
+                <property name="spacing">0</property>
+                <property name="vexpand">true</property>
+                <property name="vexpand_set">true</property>
+                <property name="height_request">20</property>
+                <property name="width_request">180</property>
+                <property name="margin_top">20</property>
+                <property name="margin_bottom">12</property>
+                <property name="orientation">horizontal</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="orientation">vertical</property>
+
+                    <child>
+                      <object class="GtkEntry" id="socket-entry">
+                        <property name="visible">true</property>
+                        <property name="can-focus">true</property>
+                        <property name="valign">center</property>
+                        <property name="input_purpose">url</property>
+                        <property name="hexpand">true</property>
+                        <property name="hexpand_set">true</property>
+                        <accessibility>
+                          <relation name="labelled-by">socket-label</relation>
+                        </accessibility>
+                        <signal name="changed" handler="_validate" swapped="no"/>
+                        <style>
+                          <class name="required" />
+                          <class name="path" />
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="socket-label">
+                        <property name="halign">start</property>
+                        <property name="height_request">10</property>
+                        <property name="margin-start">5</property>
+                        <property name="margin-top">1</property>
+                        <property name="vexpand">false</property>
+                        <property name="use-markup">true</property>
+                        <property name="use-markup">true</property>
+                        <style>
+                          <class name="error"/>
+                        </style>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>

@@ -102,6 +102,7 @@ function fillPreferencesWindow(window) {
   const daemon = builder.get_object('daemon');
   settings.bind('log-level', builder.get_object('log-level-select'), 'active', Gio.SettingsBindFlags.DEFAULT);
   settings.bind('log-level', logger, 'logLevel', Gio.SettingsBindFlags.DEFAULT);
+  settings.bind('socket', builder.get_object('socket-entry'), 'text', Gio.SettingsBindFlags.DEFAULT);
   window.add(daemon);
 
   // After close window we save window size for use to next open.

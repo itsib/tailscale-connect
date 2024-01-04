@@ -53,12 +53,6 @@ class TsConnectExtension {
    */
   _preferences = null;
   /**
-   *
-   * @type {null}
-   * @private
-   */
-  _logLevelSub = null;
-  /**
    * Settings instance
    * @type {Gio.Settings}
    * @private
@@ -86,7 +80,8 @@ class TsConnectExtension {
 
     this._settings.bind('log-level', this._logger, 'logLevel', Gio.SettingsBindFlags.DEFAULT);
 
-    const dataProvider = new DataProvider();
+    const socket = this._settings.get_string('socket')
+    const dataProvider = new DataProvider(this._logger, this._settings);
     this._preferences = new Preferences(dataProvider);
 
     this._notifications = new Notifications(this._logger);
@@ -100,10 +95,6 @@ class TsConnectExtension {
   }
 
   disable() {
-    if (this._logLevelSub !== null && this._settings) {
-      this._settings.disconnect(this._logLevelSub)
-      this._logLevelSub = null;
-    }
     this._settings = null;
 
     this._menu.destroy();

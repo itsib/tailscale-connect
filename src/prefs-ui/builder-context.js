@@ -48,6 +48,7 @@ var BuilderContext = class BuilderContext extends GObject.Object {
     const required = classes.indexOf('required') !== -1;
     const aclTag = classes.indexOf('acl-tag') !== -1;
     const url = classes.indexOf('url') !== -1;
+    const path = classes.indexOf('path') !== -1;
 
     // Required value
     if (required && !value) {
@@ -59,6 +60,13 @@ var BuilderContext = class BuilderContext extends GObject.Object {
     // Validate URL
     if (url && value && (!value.startsWith('http') || !GLib.uri_parse_scheme(value))) {
       label.label = `<span size="x-small">${_('Invalid URL value')}</span>`;
+      entry.add_css_class('error');
+      return;
+    }
+
+    // Validate file path
+    if (path && value && !value.startsWith('/')) {
+      label.label = `<span size="x-small">${_('Invalid file path')}</span>`;
       entry.add_css_class('error');
       return;
     }

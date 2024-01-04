@@ -36,5 +36,11 @@
             <summary>Default height for the preferences window</summary>
         </key>
 
+        <key name="socket" type="s">
+            <default>"/var/run/tailscale/tailscaled.sock"</default>
+            <summary>Socket</summary>
+            <description>Unix socket path used by the Tailscale binary, where the tailscaled LocalAPI socket is created.</description>
+        </key>
+
     </schema>
 </schemalist>

@@ -80,11 +80,6 @@ var TSTrayMenu = class TSTrayMenu extends PanelMenu.Button {
       flag: '--exit-node-allow-lan-access'
     }));
     this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-    this.menu.addMenuItem(new TSBtnSwitchCommon(this._preferences, {
-      label: 'Web Control Server',
-      property: 'webClient',
-      flag: '--webclient'
-    }));
     this.menu.addMenuItem(new TSBtnSettings());
   }
 

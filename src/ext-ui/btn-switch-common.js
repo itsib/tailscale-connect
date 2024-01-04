@@ -9,6 +9,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 const { require } = Me.imports.libs.require;
 const { opacityBindTo } = require('libs/utils');
 const { shell } = require('libs/shell');
+const _ = ExtensionUtils.gettext;
 
 const TWO_WAY_BIND_FLAGS = GObject.BindingFlags.SYNC_CREATE|GObject.BindingFlags.BIDIRECTIONAL;
 

@@ -28,6 +28,7 @@
  * @property {boolean} loggedIn
  * @property {boolean} enabled
  * @property {string} networkName
+ * @property {string} myNodeId
  * @property {string} loginPageUrl
  * @property {string} domain
  * @property {string} health
@@ -162,6 +163,7 @@ var PeersListModel = class PeersListModel extends GObject.Object {
       this._ids[peer.id] = i;
     }
 
+    log(`Peers ${this._peers.length}`)
     this.items_changed(0, oldLen, this._peers.length);
   }
 
@@ -257,6 +259,7 @@ var Preferences = class Preferences extends GObject.Object {
     enabled: GObject.ParamSpec.boolean('enabled', 'enabled', 'enabled', ReadWriteFlags, false),
     loginPageUrl: GObject.ParamSpec.string('loginPageUrl', 'loginPageUrl', 'loginPageUrl', ReadWriteFlags, ''),
     networkName: GObject.ParamSpec.string('networkName', 'networkName', 'networkName', ReadWriteFlags, ''),
+    myNodeId: GObject.ParamSpec.string('myNodeId', 'myNodeId', 'myNodeId', ReadWriteFlags, ''),
     domain: GObject.ParamSpec.string('domain', 'domain', 'domain', ReadWriteFlags, ''),
     health: GObject.ParamSpec.string('health', 'health', 'health', ReadWriteFlags, ''),
     acceptRoutes: GObject.ParamSpec.boolean('acceptRoutes', 'acceptRoutes', '--accept-routes', ReadWriteFlags, true),
@@ -345,6 +348,7 @@ var Preferences = class Preferences extends GObject.Object {
     const network = JSON.parse(this._dataProvider.network);
     this.networkName = network[0];
     this.domain = network[1];
+    this.myNodeId = network[2];
   }
 
   _changedHealth() {
