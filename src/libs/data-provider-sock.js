@@ -35,6 +35,17 @@ var DataProviderSock = class DataProviderSock extends GObject.Object {
    * @private
    */
   _cancelable = null;
+  /**
+   * Refresh timer
+   * @private {number|null}
+   */
+  _timerId = null;
+  /**
+   * Refresh interval for network state
+   * @type {number}
+   * @private
+   */
+  _updIntervalSec = 10;
 
   constructor(logger, settings) {
     super();
@@ -53,18 +64,27 @@ var DataProviderSock = class DataProviderSock extends GObject.Object {
     this._loop().catch(error => {
       logError(error);
     });
+
+    this._timerId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, this._updIntervalSec, this.refresh.bind(this));
   }
 
   interrupt() {
     if (this._cancelable !== null) {
-      this._cancelable.cancel()
+      this._cancelable.cancel();
       this._cancelable = null;
+    }
+
+    if (this._timerId !== null) {
+      GLib.Source.remove(this._timerId);
+      this._timerId = null;
     }
   }
 
   refresh() {
     Promise.all([this._refreshPrefs(), this._refreshStatus()])
       .catch(error => this._logger.error(error));
+
+    return GLib.SOURCE_CONTINUE;
   }
 
   destroy() {

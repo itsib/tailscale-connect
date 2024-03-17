@@ -18,6 +18,24 @@ var firstUpper = function firstUpper(text) {
 }
 
 /**
+ * Replace first letter in each word to upper case
+ * @param {string} text
+ * @return {string}
+ */
+var capitalize = function firstUpper(text) {
+  text = text
+    .replace(/[-_]/, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const words = text.split(' ');
+  for (let i = 0; i < words.length; i++) {
+    words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1)
+  }
+  return words.join(' ');
+}
+
+/**
  * Bool to decimals opacity bind callback;
  * @param bind
  * @param source

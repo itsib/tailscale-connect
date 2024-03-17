@@ -8,7 +8,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 const { require } = Me.imports.libs.require;
 
 const { networkUp, networkDown, setExitNode, login, logout } = require('libs/shell');
-const { firstUpper } = require('libs/utils');
+const { firstUpper, capitalize } = require('libs/utils');
 
 const _ = ExtensionUtils.gettext;
 
@@ -216,7 +216,7 @@ var TSBtnConnect = class TSBtnConnect extends PopupMenu.PopupSubMenuMenuItem {
     // 1) Set main button icon
     this.icon.icon_name = this._icons[exitNodeId ? 2 : 1];
     // 2) Change main button label
-    this.label.text = exitNode ? (_('Exit Node') + ': ' + firstUpper(exitNode.name)) : _('Online');
+    this.label.text = exitNode ? (_('Exit Node') + ': ' + capitalize(exitNode.name)) : _('Online');
     // 3) Clear submenu
     this._clearSubmenu();
 
@@ -256,7 +256,7 @@ class ConnectExitNodePopupMenuItem extends PopupMenu.PopupMenuItem {
    */
   constructor(logger, preferences, node) {
     const exitNodeId = preferences.exitNode;
-    const label = firstUpper(node?.name ?? 'none');
+    const label = capitalize(node?.name ?? 'none');
 
     super(label, { style_class: 'ts-popup-sub-menu-item' });
 
