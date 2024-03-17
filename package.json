@@ -1,7 +1,7 @@
 {
   "name": "tailscale-connect",
   "version": "0.0.1",
-  "description": "Graphical interface for the Tailscale service.",
+  "description": "Graphical interface for the Tailscale desktop client. Simple, faster, configurable.",
   "author": "Sergey <itsib.su@gmail.com>",
   "license": "ISC",
   "private": true,

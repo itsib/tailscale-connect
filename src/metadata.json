@@ -1,6 +1,6 @@
 {
   "name": "Tailscale Connect",
-  "description": "Graphical interface for the Tailscale service.",
+  "description": "Graphical interface for the Tailscale desktop client. Simple, faster, configurable.",
   "uuid": "tailscale-connect@itsib.github.com",
   "url": "https://github.com/itsib/tailscale-connect",
   "shell-version": [
@@ -8,5 +8,8 @@
     "43"
   ],
   "settings-schema": "org.gnome.shell.extensions.tailscale-connect",
-  "gettext-domain" : "tailscale-connect"
+  "gettext-domain" : "tailscale-connect",
+  "donation": {
+    "github": "https://github.com/itsib"
+  }
 }
